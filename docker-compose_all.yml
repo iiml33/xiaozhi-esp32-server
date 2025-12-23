@@ -33,6 +33,8 @@ services:
       - ./data:/opt/xiaozhi-esp32-server/data
       # 模型文件挂接，很重要
       - ./models/SenseVoiceSmall/model.pt:/opt/xiaozhi-esp32-server/models/SenseVoiceSmall/model.pt
+      # 猫叫声文件目录（重要：用于猫语功能）
+      - ./main/xiaozhi-server/config/cat_sounds:/opt/xiaozhi-esp32-server/config/cat_sounds
 
   # manager-api和manager-web模块
   xiaozhi-esp32-server-web:
