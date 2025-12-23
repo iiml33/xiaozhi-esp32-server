@@ -4,18 +4,7 @@ version: '3'
 services:
   # Server模块
   xiaozhi-esp32-server:
-<<<<<<< HEAD
-    # ⭐ 用本地源码构建后端镜像
-    build:
-      # 以仓库根目录作为构建上下文（能看到 Dockerfile 和 main/）
-      context: ../..
-      # 在构建上下文里查找 Dockerfile-server
-      dockerfile: Dockerfile-server
-    # 本地镜像名字，随便起，和远程仓库无关
-    image: xiaozhi-esp32-server:dev
-=======
     image: crpi-mql7znw3gpm4caw8.cn-beijing.personal.cr.aliyuncs.com/aichatbotesp32/xiaozhi-esp32-server:server_latest
->>>>>>> 6a13e2cdd0e263b3055da4da25a066b886a52987
     container_name: xiaozhi-esp32-server
     depends_on:
       - xiaozhi-esp32-server-db
@@ -40,15 +29,7 @@ services:
 
   # manager-api和manager-web模块
   xiaozhi-esp32-server-web:
-<<<<<<< HEAD
-    # ⭐ 用本地源码构建 Web（Java + Vue）镜像
-    build:
-      context: ../..
-      dockerfile: Dockerfile-web
-    image: xiaozhi-esp32-server-web:dev
-=======
     image: crpi-mql7znw3gpm4caw8.cn-beijing.personal.cr.aliyuncs.com/aichatbotesp32/xiaozhi-esp32-server:web_latest
->>>>>>> 6a13e2cdd0e263b3055da4da25a066b886a52987
     container_name: xiaozhi-esp32-server-web
     restart: always
     networks:
