@@ -20,7 +20,8 @@ echo ""
 
 # 检查登录状态
 echo "检查登录状态..."
-if ! docker pull ${REGISTRY}/test:test >/dev/null 2>&1; then
+# 不再隐藏 docker 的错误输出，方便排查问题
+if ! docker pull ${REGISTRY}/test:test; then
     echo -e "${YELLOW}未登录或登录已过期，需要先登录${NC}"
     echo ""
     echo "请执行以下命令登录："
@@ -48,7 +49,8 @@ echo ""
 
 # 推送基础镜像
 echo -e "${YELLOW}正在推送基础镜像...${NC}"
-if docker push ${IMAGE_PREFIX}:server-base 2>&1; then
+# 显示完整的 docker push 输出（包括报错）
+if docker push ${IMAGE_PREFIX}:server-base; then
     echo -e "${GREEN}✓ 基础镜像推送成功${NC}"
 else
     echo -e "${RED}✗ 基础镜像推送失败${NC}"
@@ -58,7 +60,7 @@ echo ""
 
 # 推送服务端镜像
 echo -e "${YELLOW}正在推送服务端镜像...${NC}"
-if docker push ${IMAGE_PREFIX}:server_latest 2>&1; then
+if docker push ${IMAGE_PREFIX}:server_latest; then
     echo -e "${GREEN}✓ 服务端镜像推送成功${NC}"
 else
     echo -e "${RED}✗ 服务端镜像推送失败${NC}"
@@ -68,7 +70,7 @@ echo ""
 
 # 推送Web镜像
 echo -e "${YELLOW}正在推送Web镜像...${NC}"
-if docker push ${IMAGE_PREFIX}:web_latest 2>&1; then
+if docker push ${IMAGE_PREFIX}:web_latest; then
     echo -e "${GREEN}✓ Web镜像推送成功${NC}"
 else
     echo -e "${RED}✗ Web镜像推送失败${NC}"
