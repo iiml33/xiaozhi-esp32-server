@@ -136,18 +136,40 @@ class TTSProvider(TTSProviderBase):
         根据猫叫声类型获取猫叫声文件
         返回: 音频文件路径，如果找不到则返回None
         """
-        sound_dir = os.path.join(self.cat_sounds_dir, sound_type)
+        # 尝试多种文件夹名称格式（小写、首字母大写、全大写）
+        possible_dirs = [
+            os.path.join(self.cat_sounds_dir, sound_type),  # 小写：meow
+            os.path.join(self.cat_sounds_dir, sound_type.capitalize()),  # 首字母大写：Meow
+            os.path.join(self.cat_sounds_dir, sound_type.upper()),  # 全大写：MEOW
+        ]
         
-        if not os.path.exists(sound_dir):
+        sound_dir = None
+        for dir_path in possible_dirs:
+            if os.path.exists(dir_path):
+                sound_dir = dir_path
+                logger.bind(tag=TAG).debug(f"找到猫叫声文件夹: {dir_path}")
+                break
+        
+        if not sound_dir:
             logger.bind(tag=TAG).warning(
-                f"猫叫声类型文件夹不存在: {sound_dir}，请创建该文件夹并添加猫叫声文件"
+                f"猫叫声类型文件夹不存在（已尝试: {', '.join(possible_dirs)}），请创建该文件夹并添加猫叫声文件"
             )
             # 尝试使用默认类型
             if sound_type != self.default_sound_type:
-                sound_dir = os.path.join(self.cat_sounds_dir, self.default_sound_type)
-                if not os.path.exists(sound_dir):
+                default_possible_dirs = [
+                    os.path.join(self.cat_sounds_dir, self.default_sound_type),
+                    os.path.join(self.cat_sounds_dir, self.default_sound_type.capitalize()),
+                    os.path.join(self.cat_sounds_dir, self.default_sound_type.upper()),
+                ]
+                for dir_path in default_possible_dirs:
+                    if os.path.exists(dir_path):
+                        sound_dir = dir_path
+                        logger.bind(tag=TAG).debug(f"使用默认猫叫声文件夹: {dir_path}")
+                        break
+                
+                if not sound_dir:
                     logger.bind(tag=TAG).error(
-                        f"默认猫叫声类型文件夹也不存在: {sound_dir}"
+                        f"默认猫叫声类型文件夹也不存在（已尝试: {', '.join(default_possible_dirs)}）"
                     )
                     return None
         
