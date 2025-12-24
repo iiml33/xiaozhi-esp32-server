@@ -150,3 +150,6 @@ docker-compose -f docker-compose_all.yml up -d
 
 **验证方法**：检查容器内目录和日志。
 
+
+
+
