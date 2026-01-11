@@ -6,17 +6,31 @@
 
 ## 猫叫声类型识别
 
-系统支持识别以下9种猫叫声类型：
+系统支持识别以下16种猫叫声类型，按4大类分类：
 
-1. **喵 (meow)** - 求关注、撒娇、期待、轻微抱怨
-2. **呼噜 (purr)** - 放松、满足、安全感
-3. **咕噜咕噜/颤音 (trill)** - 友好、欢迎
-4. **咔咔/啾啾 (chattering)** - 兴奋、专注、略挫败
-5. **哈气 (hiss)** - 恐惧、防御、警告
-6. **低吼/咆哮 (growl)** - 威胁、愤怒、防御升级
-7. **嚎叫/长嗷 (yowl)** - 发情、压力、焦虑、疼痛
-8. **尖叫/惨叫 (scream)** - 突然疼痛、强烈惊吓
-9. **嘟嘟嘟不满声/咕哝 (mutter)** - 不耐烦、轻度烦躁
+### 😊 积极与亲昵 (01_positive)
+1. **打招呼 (01_positive_greeting)** - 短促、轻盈的问候叫声
+2. **对主人撒娇 (01_positive_affectionate)** - 声音拐弯、温柔的撒娇声
+3. **表达喜欢爱你 (01_positive_loving)** - 表达爱意和满足的叫声
+4. **邀请一起玩 (01_positive_inviting_play)** - 邀请玩耍的轻快叫声
+5. **睡醒慵懒叫 (01_positive_awake_stretch)** - 睡醒后舒服、慵懒的叫声
+
+### 🗣️ 需求与沟通 (02_demand)
+6. **思念主人 (02_demand_missing)** - 激动、拉长的叫声，表达思念或强烈需求
+7. **发出疑问 (02_demand_curious)** - 表达好奇和疑问的叫声
+8. **吃饭满足叫 (02_demand_eating_happily)** - 边吃边发出的满意叫声
+
+### ⚠️ 警告与不适 (03_warning)
+9. **不耐烦/责怪 (03_warning_annoyed)** - 短促、重音，类似"啂"的不满叫声
+10. **生气叫骂 (03_warning_angry_growl)** - 连续、喉咙发出的警告声
+11. **生气想打人 (03_warning_aggressive_hiss)** - 尖利、持续哈气的攻击前最后警告
+12. **求偶叫声 (03_warning_mating_call)** - 发情期粗粝、不好听的长鸣
+
+### 😿 压力与痛苦 (04_stress)
+13. **关心/好奇询问 (04_stress_concerned_inquiry)** - 拐弯拉长、带询问语调的叫声
+14. **打喷嚏 (04_stress_sneeze)** - 对刺激物的生理反应声音
+15. **委屈叫声 (04_stress_whining)** - 短促带试探的委屈、讨好声
+16. **害怕尖叫 (04_stress_scared_scream)** - 受惊吓时的极高音调短促尖叫
 
 详细说明和关键词列表请参考：[猫叫声类型详细说明](./cat-language-sound-types.md)
 
@@ -24,13 +38,17 @@
 
 除了关键词识别，系统还支持以下格式的标签（优先级最高）：
 
-- `[sound:meow]` - 喵
-- `[sound:purr]` - 呼噜
-- `<sound>trill</sound>` - 咕噜咕噜/颤音
-- `猫叫:chattering` - 咔咔/啾啾
-- `叫声:growl` - 低吼/咆哮
+- `[sound:01_positive_greeting]` - 打招呼
+- `[sound:02_demand_missing]` - 思念主人
+- `<sound>03_warning_annoyed</sound>` - 不耐烦/责怪
+- `猫叫:04_stress_scared_scream` - 害怕尖叫
+- `叫声:01_positive_affectionate` - 对主人撒娇
 
-支持的9种类型：meow, purr, trill, chattering, hiss, growl, yowl, scream, mutter
+也支持简写格式（系统会自动匹配完整名称）：
+- `[sound:greeting]` → 自动匹配 `01_positive_greeting`
+- `[sound:missing]` → 自动匹配 `02_demand_missing`
+
+支持的16种类型完整列表请参考：[猫叫声类型详细说明](./cat-language-sound-types.md)
 
 ## 文件夹结构
 
@@ -38,15 +56,22 @@
 
 ```
 config/cat_sounds/
-├── meow/        # 喵 - 求关注、撒娇、期待、轻微抱怨
-├── purr/        # 呼噜 - 放松、满足、安全感
-├── trill/       # 咕噜咕噜/颤音 - 友好、欢迎
-├── chattering/  # 咔咔/啾啾 - 兴奋、专注、略挫败
-├── hiss/        # 哈气 - 恐惧、防御、警告
-├── growl/       # 低吼/咆哮 - 威胁、愤怒、防御升级
-├── yowl/        # 嚎叫/长嗷 - 发情、压力、焦虑、疼痛
-├── scream/      # 尖叫/惨叫 - 突然疼痛、强烈惊吓
-└── mutter/      # 嘟嘟嘟不满声/咕哝 - 不耐烦、轻度烦躁
+├── 01_positive_greeting/          # 😊 积极与亲昵 - 打招呼
+├── 01_positive_affectionate/        # 😊 积极与亲昵 - 对主人撒娇
+├── 01_positive_loving/              # 😊 积极与亲昵 - 表达喜欢爱你
+├── 01_positive_inviting_play/       # 😊 积极与亲昵 - 邀请一起玩
+├── 01_positive_awake_stretch/       # 😊 积极与亲昵 - 睡醒慵懒叫
+├── 02_demand_missing/               # 🗣️ 需求与沟通 - 思念主人
+├── 02_demand_curious/               # 🗣️ 需求与沟通 - 发出疑问
+├── 02_demand_eating_happily/        # 🗣️ 需求与沟通 - 吃饭满足叫
+├── 03_warning_annoyed/              # ⚠️ 警告与不适 - 不耐烦/责怪
+├── 03_warning_angry_growl/          # ⚠️ 警告与不适 - 生气叫骂
+├── 03_warning_aggressive_hiss/      # ⚠️ 警告与不适 - 生气想打人
+├── 03_warning_mating_call/           # ⚠️ 警告与不适 - 求偶叫声
+├── 04_stress_concerned_inquiry/     # 😿 压力与痛苦 - 关心/好奇询问
+├── 04_stress_sneeze/                # 😿 压力与痛苦 - 打喷嚏
+├── 04_stress_whining/               # 😿 压力与痛苦 - 委屈叫声
+└── 04_stress_scared_scream/         # 😿 压力与痛苦 - 害怕尖叫
 ```
 
 详细说明请参考：[猫叫声类型详细说明](./cat-language-sound-types.md)
@@ -68,7 +93,7 @@ config/cat_sounds/
 4. 在"供应器"下拉菜单中选择"猫语"
 5. 配置以下参数：
    - **猫叫声文件夹路径** (`cat_sounds_dir`): 默认为 `config/cat_sounds`
-   - **默认猫叫声类型** (`default_sound_type`): 当无法识别时使用的默认类型，默认为 `meow`
+   - **默认猫叫声类型** (`default_sound_type`): 当无法识别时使用的默认类型，默认为 `01_positive_greeting`
 
 ### 在配置文件中配置
 
@@ -79,7 +104,7 @@ TTS:
   CatLanguage:
     type: cat_language
     cat_sounds_dir: config/cat_sounds
-    default_sound_type: meow
+    default_sound_type: 01_positive_greeting
     output_dir: tmp/
 
 selected_module:
@@ -102,8 +127,8 @@ selected_module:
 
 2. **大语言模型配置**：
    - 在提示词中要求大语言模型在回复中包含猫叫声类型信息
-   - 可以使用标签格式，例如：`[sound:meow]` 或 `<sound>purr</sound>`
-   - 或者在回复文本中包含对应的关键词（如：求关注、放松、友好等）
+   - 可以使用标签格式，例如：`[sound:01_positive_greeting]` 或 `<sound>02_demand_missing</sound>`
+   - 或者在回复文本中包含对应的关键词（如：打招呼、思念、撒娇等）
 
 3. **测试**：
    - 测试不同情绪的识别是否准确
@@ -116,15 +141,15 @@ selected_module:
 
 **解决方案**：
 - 检查 `cat_sounds_dir` 配置的路径是否正确
-- 确保文件夹结构正确（angry/happy/fearful子文件夹存在）
+- 确保文件夹结构正确（16个子文件夹存在）
 - 检查音频文件格式是否支持
 
 ### 问题：猫叫声类型识别不准确
 
 **解决方案**：
-- 在文本中使用明确的标签格式：`[sound:meow]` 或 `<sound>purr</sound>`
+- 在文本中使用明确的标签格式：`[sound:01_positive_greeting]` 或 `<sound>02_demand_missing</sound>`
 - 确保文本中包含对应的关键词（参考[猫叫声类型详细说明](./cat-language-sound-types.md)）
-- 如果无法识别，系统会使用默认类型（meow）
+- 如果无法识别，系统会使用默认类型（01_positive_greeting）
 
 ### 问题：没有播放声音
 
@@ -139,26 +164,34 @@ selected_module:
 
 大语言模型返回：
 ```
-[sound:purr] 今天天气真好，我很放松！
+[sound:01_positive_affectionate] 主人，我好想你呀！
 ```
 
-系统会识别到"purr"类型，从 `config/cat_sounds/purr/` 文件夹中随机选择一个音频文件播放。
+系统会识别到"01_positive_affectionate"类型，从 `config/cat_sounds/01_positive_affectionate/` 文件夹中随机选择一个音频文件播放。
 
 ### 示例2：使用关键词
 
 大语言模型返回：
 ```
-我很放松，感觉很满足。
+我很思念主人，想你了。
 ```
 
-系统会识别到"放松"、"满足"关键词，对应"purr"类型，从 `config/cat_sounds/purr/` 文件夹中随机选择一个音频文件播放。
+系统会识别到"思念"、"想你"关键词，对应"02_demand_missing"类型，从 `config/cat_sounds/02_demand_missing/` 文件夹中随机选择一个音频文件播放。
 
-### 示例3：无法识别类型
+### 示例3：使用简写标签
+
+大语言模型返回：
+```
+[sound:greeting] 你好！
+```
+
+系统会识别到简写"greeting"，自动匹配为"01_positive_greeting"类型，从 `config/cat_sounds/01_positive_greeting/` 文件夹中随机选择一个音频文件播放。
+
+### 示例4：无法识别类型
 
 大语言模型返回：
 ```
 今天是个普通的日子。
 ```
 
-系统无法识别到明确的类型，会使用默认类型（meow），从 `config/cat_sounds/meow/` 文件夹中随机选择一个音频文件播放。
-
+系统无法识别到明确的类型，会使用默认类型（01_positive_greeting），从 `config/cat_sounds/01_positive_greeting/` 文件夹中随机选择一个音频文件播放。

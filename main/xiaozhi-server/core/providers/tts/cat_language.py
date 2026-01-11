@@ -21,59 +21,85 @@ class TTSProvider(TTSProviderBase):
             )
         
         # 猫叫声类型到情绪关键词的映射
-        # 1. 喵（Meow）- 求关注、撒娇、期待、轻微抱怨
-        # 2. 呼噜（Purr）- 放松、满足、安全感
-        # 3. 咕噜咕噜/颤音（Trill）- 友好、欢迎
-        # 4. 咔咔/啾啾（Chattering）- 兴奋、专注、略挫败
-        # 5. 哈气（Hiss）- 恐惧、防御、警告
-        # 6. 低吼/咆哮（Growl）- 威胁、愤怒、防御升级
-        # 7. 嚎叫/长嗷（Yowl）- 发情、压力、焦虑、疼痛
-        # 8. 尖叫/惨叫（Scream）- 突然疼痛、强烈惊吓
-        # 9. 嘟嘟嘟不满声/咕哝（Mutter）- 不耐烦、轻度烦躁
+        # 新分类系统：4大类16种具体类型
+        # 😊 积极与亲昵 (01_positive)
+        # 🗣️ 需求与沟通 (02_demand)
+        # ⚠️ 警告与不适 (03_warning)
+        # 😿 压力与痛苦 (04_stress)
         
         self.cat_sound_keywords = {
-            "meow": {
-                "zh": ["求关注", "撒娇", "期待", "喂食", "开门", "轻微抱怨", "友好", "打招呼", "想互动", 
-                       "不耐烦", "要求", "焦虑", "受惊", "不舒服", "喵", "叫"],
-                "en": ["attention", "cute", "expect", "feed", "open", "slight", "friendly", "greet", 
-                       "interact", "impatient", "demand", "anxious", "startled", "uncomfortable", "meow"]
+            # 😊 积极与亲昵 (01_positive)
+            "01_positive_greeting": {
+                "zh": ["打招呼", "问候", "你好", "回来", "见面", "欢迎", "友好", "轻快", "短促", "轻盈"],
+                "en": ["greeting", "hello", "hi", "welcome", "friendly", "light", "short", "quick"]
             },
-            "purr": {
-                "zh": ["放松", "满足", "安全感", "舒适", "惬意", "安心", "呼噜"],
-                "en": ["relaxed", "satisfied", "safe", "comfortable", "content", "secure", "purr"]
+            "01_positive_affectionate": {
+                "zh": ["撒娇", "亲昵", "温柔", "拐弯", "黏人", "卖萌", "可爱", "亲热", "依恋"],
+                "en": ["affectionate", "cute", "sweet", "gentle", "loving", "cuddly", "adorable", "tender"]
             },
-            "trill": {
-                "zh": ["友好", "欢迎", "想你", "带路", "回家", "绕", "咕噜", "颤音"],
-                "en": ["friendly", "welcome", "miss", "guide", "home", "around", "trill", "chirrup"]
+            "01_positive_loving": {
+                "zh": ["喜欢", "爱你", "爱意", "满足", "幸福", "开心", "快乐", "满足", "表达爱"],
+                "en": ["loving", "love", "affection", "happy", "content", "satisfied", "joyful", "pleased"]
             },
-            "chattering": {
-                "zh": ["兴奋", "专注", "挫败", "捕猎", "想抓", "咔咔", "啾啾"],
-                "en": ["excited", "focused", "frustrated", "hunt", "catch", "chattering", "chirping"]
+            "01_positive_inviting_play": {
+                "zh": ["邀请", "一起玩", "玩耍", "游戏", "轻快", "活泼", "兴奋", "互动", "想玩"],
+                "en": ["inviting", "play", "game", "playful", "active", "excited", "interactive", "fun"]
             },
-            "hiss": {
-                "zh": ["恐惧", "防御", "警告", "不安全", "别靠近", "哈气"],
-                "en": ["fear", "defense", "warning", "unsafe", "away", "hiss"]
+            "01_positive_awake_stretch": {
+                "zh": ["睡醒", "慵懒", "伸懒腰", "舒服", "放松", "醒来", "打哈欠", "舒展"],
+                "en": ["awake", "stretch", "lazy", "comfortable", "relaxed", "waking", "yawn", "stretching"]
             },
-            "growl": {
-                "zh": ["威胁", "愤怒", "防御升级", "领地", "冲突", "低吼", "咆哮"],
-                "en": ["threat", "angry", "defense", "territory", "conflict", "growl"]
+            # 🗣️ 需求与沟通 (02_demand)
+            "02_demand_missing": {
+                "zh": ["思念", "想念", "想你", "主人", "激动", "拉长", "强烈需求", "渴望", "呼唤"],
+                "en": ["missing", "miss", "longing", "owner", "excited", "long", "demand", "craving", "call"]
             },
-            "yowl": {
-                "zh": ["发情", "压力", "焦虑", "寻找", "疼痛", "不适", "嚎叫", "长嗷"],
-                "en": ["heat", "stress", "anxiety", "search", "pain", "discomfort", "yowl", "howl"]
+            "02_demand_curious": {
+                "zh": ["疑问", "好奇", "询问", "什么", "为什么", "疑惑", "想知道", "探索"],
+                "en": ["curious", "question", "wonder", "what", "why", "inquiry", "explore", "ask"]
             },
-            "scream": {
-                "zh": ["突然疼痛", "强烈惊吓", "受伤", "被卡", "尖叫", "惨叫"],
-                "en": ["sudden pain", "strong shock", "injured", "stuck", "scream"]
+            "02_demand_eating_happily": {
+                "zh": ["吃饭", "满足", "满意", "好吃", "享受", "进食", "用餐", "饱足", "美味"],
+                "en": ["eating", "happily", "satisfied", "delicious", "enjoy", "meal", "food", "yummy", "tasty"]
             },
-            "mutter": {
-                "zh": ["不耐烦", "烦躁", "抗议", "被打扰", "嘟嘟", "咕哝"],
-                "en": ["impatient", "annoyed", "protest", "disturbed", "mutter", "grumble"]
+            # ⚠️ 警告与不适 (03_warning)
+            "03_warning_annoyed": {
+                "zh": ["不耐烦", "责怪", "不满", "啂", "短促", "重音", "烦躁", "抱怨", "抗议"],
+                "en": ["annoyed", "impatient", "complaint", "short", "heavy", "irritated", "protest", "grumble"]
+            },
+            "03_warning_angry_growl": {
+                "zh": ["生气", "叫骂", "愤怒", "警告", "低吼", "连续", "喉咙", "威胁", "不满"],
+                "en": ["angry", "growl", "warning", "threat", "continuous", "throat", "mad", "furious"]
+            },
+            "03_warning_aggressive_hiss": {
+                "zh": ["想打人", "攻击", "尖利", "持续", "哈气", "防御", "危险", "警告", "攻击性"],
+                "en": ["aggressive", "hiss", "attack", "sharp", "continuous", "defense", "danger", "hostile"]
+            },
+            "03_warning_mating_call": {
+                "zh": ["求偶", "发情", "粗粝", "长鸣", "不好听", "交配", "繁殖", "发情期"],
+                "en": ["mating", "call", "heat", "rough", "long", "breeding", "reproduction", "estrus"]
+            },
+            # 😿 压力与痛苦 (04_stress)
+            "04_stress_concerned_inquiry": {
+                "zh": ["关心", "好奇询问", "拐弯", "拉长", "询问", "谨慎", "担心", "关切", "询问"],
+                "en": ["concerned", "inquiry", "question", "careful", "worried", "care", "ask", "inquire"]
+            },
+            "04_stress_sneeze": {
+                "zh": ["打喷嚏", "喷嚏", "刺激", "过敏", "反应", "阿嚏"],
+                "en": ["sneeze", "sneezing", "irritation", "allergy", "reaction", "achoo"]
+            },
+            "04_stress_whining": {
+                "zh": ["委屈", "讨好", "短促", "试探", "可怜", "哀求", "诉苦", "抱怨"],
+                "en": ["whining", "pleading", "short", "tentative", "pitiful", "begging", "complaining"]
+            },
+            "04_stress_scared_scream": {
+                "zh": ["害怕", "尖叫", "惊吓", "受惊", "恐惧", "极高音调", "短促", "惊恐"],
+                "en": ["scared", "scream", "frightened", "fear", "high pitch", "short", "terrified", "panic"]
             }
         }
         
         # 默认猫叫声类型（如果无法识别）
-        self.default_sound_type = config.get("default_sound_type", "meow")
+        self.default_sound_type = config.get("default_sound_type", "01_positive_greeting")
         
         # 支持的音频格式
         self.supported_formats = [".wav", ".mp3", ".ogg", ".m4a"]
@@ -81,7 +107,8 @@ class TTSProvider(TTSProviderBase):
     def extract_sound_type_from_text(self, text):
         """
         从文本中提取猫叫声类型
-        返回: "meow", "purr", "trill", "chattering", "hiss", "growl", "yowl", "scream", "mutter" 或默认类型
+        只通过标签格式识别，LLM应该在回复中包含标签
+        返回: 新的16种分类之一或默认类型
         """
         if not isinstance(text, str) or not text:
             logger.bind(tag=TAG).debug(
@@ -89,46 +116,41 @@ class TTSProvider(TTSProviderBase):
             )
             return self.default_sound_type
         
-        text_lower = text.lower()
-        
-        # 优先级1: 检查猫叫声类型标签，例如: [sound:meow] 或 <sound>purr</sound>
+        # 检查猫叫声类型标签，例如: [sound:01_positive_greeting] 或 <sound>02_demand_missing</sound>
         sound_patterns = [
-            r'\[sound[:\s]+(\w+)\]',
-            r'<sound>(\w+)</sound>',
-            r'猫叫[:\s]+(\w+)',
-            r'sound[:\s]+(\w+)',
-            r'叫声[:\s]+(\w+)'
+            r'\[sound[:\s]+([\w_]+)\]',
+            r'<sound>([\w_]+)</sound>',
+            r'猫叫[:\s]+([\w_]+)',
+            r'sound[:\s]+([\w_]+)',
+            r'叫声[:\s]+([\w_]+)'
+        ]
+        
+        valid_types = [
+            "01_positive_greeting", "01_positive_affectionate", "01_positive_loving",
+            "01_positive_inviting_play", "01_positive_awake_stretch",
+            "02_demand_missing", "02_demand_curious", "02_demand_eating_happily",
+            "03_warning_annoyed", "03_warning_angry_growl", "03_warning_aggressive_hiss",
+            "03_warning_mating_call",
+            "04_stress_concerned_inquiry", "04_stress_sneeze", "04_stress_whining",
+            "04_stress_scared_scream"
         ]
         
         for pattern in sound_patterns:
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
                 sound_type = match.group(1).lower()
-                valid_types = ["meow", "purr", "trill", "chattering", "hiss", "growl", "yowl", "scream", "mutter"]
+                # 支持简写格式（不带前缀），如 greeting 自动匹配 01_positive_greeting
                 if sound_type in valid_types:
                     logger.bind(tag=TAG).debug(f"从文本中识别到猫叫声类型标签: {sound_type}")
                     return sound_type
+                # 尝试简写匹配
+                for valid_type in valid_types:
+                    if sound_type == valid_type.split('_')[-1]:
+                        logger.bind(tag=TAG).debug(f"从文本中识别到猫叫声类型标签（简写）: {sound_type} -> {valid_type}")
+                        return valid_type
         
-        # 优先级2: 检查中文关键词（按优先级顺序，从最具体到最通用）
-        # 先检查最严重的（scream, yowl, growl, hiss）
-        priority_order = ["scream", "yowl", "growl", "hiss", "chattering", "mutter", "trill", "purr", "meow"]
-        
-        for sound_type in priority_order:
-            keywords = self.cat_sound_keywords.get(sound_type, {})
-            for keyword in keywords.get("zh", []):
-                if keyword in text:
-                    logger.bind(tag=TAG).debug(f"从文本中识别到猫叫声类型: {sound_type} (关键词: {keyword})")
-                    return sound_type
-        
-        # 优先级3: 检查英文关键词
-        for sound_type in priority_order:
-            keywords = self.cat_sound_keywords.get(sound_type, {})
-            for keyword in keywords.get("en", []):
-                if keyword.lower() in text_lower:
-                    logger.bind(tag=TAG).debug(f"从文本中识别到猫叫声类型: {sound_type} (关键词: {keyword})")
-                    return sound_type
-        
-        logger.bind(tag=TAG).debug(f"无法识别猫叫声类型，使用默认类型: {self.default_sound_type}")
+        # 如果没有找到标签，使用默认类型
+        logger.bind(tag=TAG).debug(f"未找到猫叫声类型标签，使用默认类型: {self.default_sound_type}")
         return self.default_sound_type
 
     def get_cat_sound_file(self, sound_type):
@@ -136,11 +158,12 @@ class TTSProvider(TTSProviderBase):
         根据猫叫声类型获取猫叫声文件
         返回: 音频文件路径，如果找不到则返回None
         """
-        # 尝试多种文件夹名称格式（小写、首字母大写、全大写）
+        # 尝试多种文件夹名称格式（原样、小写、首字母大写、全大写）
+        # 新格式使用下划线，如：01_positive_greeting
         possible_dirs = [
-            os.path.join(self.cat_sounds_dir, sound_type),  # 小写：meow
-            os.path.join(self.cat_sounds_dir, sound_type.capitalize()),  # 首字母大写：Meow
-            os.path.join(self.cat_sounds_dir, sound_type.upper()),  # 全大写：MEOW
+            os.path.join(self.cat_sounds_dir, sound_type),  # 原样：01_positive_greeting
+            os.path.join(self.cat_sounds_dir, sound_type.lower()),  # 全小写
+            os.path.join(self.cat_sounds_dir, sound_type.upper()),  # 全大写
         ]
         
         sound_dir = None

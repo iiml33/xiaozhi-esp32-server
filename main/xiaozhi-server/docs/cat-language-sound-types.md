@@ -2,188 +2,214 @@
 
 ## 文件夹结构
 
-系统支持9种猫叫声类型，需要在服务器上创建对应的文件夹：
+系统支持16种猫叫声类型，按4大类分类，需要在服务器上创建对应的文件夹：
 
 ```
 config/cat_sounds/
-├── meow/        # 喵 - 求关注、撒娇、期待、轻微抱怨
-├── purr/        # 呼噜 - 放松、满足、安全感
-├── trill/       # 咕噜咕噜/颤音 - 友好、欢迎
-├── chattering/  # 咔咔/啾啾 - 兴奋、专注、略挫败
-├── hiss/        # 哈气 - 恐惧、防御、警告
-├── growl/       # 低吼/咆哮 - 威胁、愤怒、防御升级
-├── yowl/        # 嚎叫/长嗷 - 发情、压力、焦虑、疼痛
-├── scream/      # 尖叫/惨叫 - 突然疼痛、强烈惊吓
-└── mutter/      # 嘟嘟嘟不满声/咕哝 - 不耐烦、轻度烦躁
+├── 01_positive_greeting/          # 😊 积极与亲昵 - 打招呼
+├── 01_positive_affectionate/        # 😊 积极与亲昵 - 对主人撒娇
+├── 01_positive_loving/              # 😊 积极与亲昵 - 表达喜欢爱你
+├── 01_positive_inviting_play/       # 😊 积极与亲昵 - 邀请一起玩
+├── 01_positive_awake_stretch/       # 😊 积极与亲昵 - 睡醒慵懒叫
+├── 02_demand_missing/               # 🗣️ 需求与沟通 - 思念主人
+├── 02_demand_curious/               # 🗣️ 需求与沟通 - 发出疑问
+├── 02_demand_eating_happily/        # 🗣️ 需求与沟通 - 吃饭满足叫
+├── 03_warning_annoyed/              # ⚠️ 警告与不适 - 不耐烦/责怪
+├── 03_warning_angry_growl/          # ⚠️ 警告与不适 - 生气叫骂
+├── 03_warning_aggressive_hiss/      # ⚠️ 警告与不适 - 生气想打人
+├── 03_warning_mating_call/           # ⚠️ 警告与不适 - 求偶叫声
+├── 04_stress_concerned_inquiry/     # 😿 压力与痛苦 - 关心/好奇询问
+├── 04_stress_sneeze/                # 😿 压力与痛苦 - 打喷嚏
+├── 04_stress_whining/               # 😿 压力与痛苦 - 委屈叫声
+└── 04_stress_scared_scream/         # 😿 压力与痛苦 - 害怕尖叫
 ```
 
 ## 各类型详细说明
 
-### 1. 喵（Meow）
+### 😊 积极与亲昵 (01_positive)
 
-**对人沟通为主：想要你做点什么**
+#### 1. 打招呼 (01_positive_greeting)
 
-**可能情绪：**
-- 求关注
-- 撒娇
-- 期待（喂食/开门）
-- 轻微抱怨
-
-**线索：**
-- 短、轻、软：友好/打招呼/想互动
-- 长、重复、变大声：不耐烦、要求更强、焦虑感上升
-- 很尖或突然拔高：受惊、不舒服
+**具体叫声描述：**
+- 短促、轻盈的问候叫声
+- 友好、轻快的音调
 
 **识别关键词：**
-- 中文：求关注、撒娇、期待、喂食、开门、轻微抱怨、友好、打招呼、想互动、不耐烦、要求、焦虑、受惊、不舒服、喵、叫
-- 英文：attention, cute, expect, feed, open, slight, friendly, greet, interact, impatient, demand, anxious, startled, uncomfortable, meow
+- 中文：打招呼、问候、你好、回来、见面、欢迎、友好、轻快、短促、轻盈
+- 英文：greeting, hello, hi, welcome, friendly, light, short, quick
 
-### 2. 呼噜（Purr）
+#### 2. 对主人撒娇 (01_positive_affectionate)
 
-**常见情绪：**
-- 放松
-- 满足
-- 安全感
-
-**但也可能：**
-- 紧张时自我安抚
-- 疼痛或不适（有些猫会在不舒服时呼噜）
-
-**线索：**
-- 看身体：是否放松、揉踩、慢眨眼
-- 若蜷缩、躲、食欲差还呼噜，要留意健康
+**具体叫声描述：**
+- 声音拐弯、温柔的撒娇声
+- 亲昵、依恋的表达
 
 **识别关键词：**
-- 中文：放松、满足、安全感、舒适、惬意、安心、呼噜
-- 英文：relaxed, satisfied, safe, comfortable, content, secure, purr
+- 中文：撒娇、亲昵、温柔、拐弯、黏人、卖萌、可爱、亲热、依恋
+- 英文：affectionate, cute, sweet, gentle, loving, cuddly, adorable, tender
 
-### 3. 咕噜咕噜/颤音（Trill / Chirrup）
+#### 3. 表达喜欢爱你 (01_positive_loving)
 
-**常见情绪：**
-- 友好
-- 欢迎
-- 想你跟着它（带路去吃的/去某个地方）
-
-**常见场景：**
-- 你回家
-- 它在你脚边绕
-- 走两步回头叫你
+**具体叫声描述：**
+- 表达爱意和满足的叫声
+- 幸福、开心的音调
 
 **识别关键词：**
-- 中文：友好、欢迎、想你、带路、回家、绕、咕噜、颤音
-- 英文：friendly, welcome, miss, guide, home, around, trill, chirrup
+- 中文：喜欢、爱你、爱意、满足、幸福、开心、快乐、满足、表达爱
+- 英文：loving, love, affection, happy, content, satisfied, joyful, pleased
 
-### 4. 咔咔/啾啾（Chattering / Chirping）
+#### 4. 邀请一起玩 (01_positive_inviting_play)
 
-**常见状态：**
-- 高度兴奋
-- 强烈捕猎欲/挫败感（想抓又抓不到）
-
-**情绪更像：**
-- 兴奋
-- 专注
-- 略挫败
+**具体叫声描述：**
+- 邀请玩耍的轻快叫声
+- 活泼、兴奋的音调
 
 **识别关键词：**
-- 中文：兴奋、专注、挫败、捕猎、想抓、咔咔、啾啾
-- 英文：excited, focused, frustrated, hunt, catch, chattering, chirping
+- 中文：邀请、一起玩、玩耍、游戏、轻快、活泼、兴奋、互动、想玩
+- 英文：inviting, play, game, playful, active, excited, interactive, fun
 
-### 5. 哈气（Hiss）
+#### 5. 睡醒慵懒叫 (01_positive_awake_stretch)
 
-**情绪：**
-- 恐惧
-- 防御
-- 警告（"别靠近"）
-
-**不是"坏脾气"，更多是觉得不安全**
-
-**常伴随：**
-- 耳朵后压
-- 身体低伏
-- 炸毛
+**具体叫声描述：**
+- 睡醒后舒服、慵懒的叫声
+- 联想伸懒腰的场景
 
 **识别关键词：**
-- 中文：恐惧、防御、警告、不安全、别靠近、哈气
-- 英文：fear, defense, warning, unsafe, away, hiss
+- 中文：睡醒、慵懒、伸懒腰、舒服、放松、醒来、打哈欠、舒展
+- 英文：awake, stretch, lazy, comfortable, relaxed, waking, yawn, stretching
 
-### 6. 低吼/咆哮（Growl）
+### 🗣️ 需求与沟通 (02_demand)
 
-**情绪：**
-- 威胁感强
-- 愤怒/防御升级
-- 领地冲突
+#### 6. 思念主人 (02_demand_missing)
 
-**常见场景：**
-- 陌生猫/狗靠近
-- 护食护地
-- 被逼到角落
+**具体叫声描述：**
+- 激动、拉长的叫声
+- 表达思念或强烈需求
 
 **识别关键词：**
-- 中文：威胁、愤怒、防御升级、领地、冲突、低吼、咆哮
-- 英文：threat, angry, defense, territory, conflict, growl
+- 中文：思念、想念、想你、主人、激动、拉长、强烈需求、渴望、呼唤
+- 英文：missing, miss, longing, owner, excited, long, demand, craving, call
 
-### 7. 嚎叫/长嗷（Yowl / Howl）
+#### 7. 发出疑问 (02_demand_curious)
 
-**可能含义跨度大：**
-
-1. **发情相关**（尤其未绝育）
-2. **压力/焦虑**、寻找同伴
-3. **疼痛或身体不适**
-4. **老年猫认知变化**（夜里嚎叫更常见）
-
-**线索：**
-- 是否突然开始
-- 是否伴随厕所问题/食欲变化/摸哪里会痛
+**具体叫声描述：**
+- 表达好奇和疑问的叫声
+- 询问、探索的音调
 
 **识别关键词：**
-- 中文：发情、压力、焦虑、寻找、疼痛、不适、嚎叫、长嗷
-- 英文：heat, stress, anxiety, search, pain, discomfort, yowl, howl
+- 中文：疑问、好奇、询问、什么、为什么、疑惑、想知道、探索
+- 英文：curious, question, wonder, what, why, inquiry, explore, ask
 
-### 8. 尖叫/惨叫（Scream）
+#### 8. 吃饭满足叫 (02_demand_eating_happily)
 
-**通常是：**
-- 突然疼痛
-- 强烈惊吓
-- 打架时受伤
-
-**这种一般要立刻检查是否受伤或被卡住**
+**具体叫声描述：**
+- 边吃边发出的满意叫声
+- 享受、满足的音调
 
 **识别关键词：**
-- 中文：突然疼痛、强烈惊吓、受伤、被卡、尖叫、惨叫
-- 英文：sudden pain, strong shock, injured, stuck, scream
+- 中文：吃饭、满足、满意、好吃、享受、进食、用餐、饱足、美味
+- 英文：eating, happily, satisfied, delicious, enjoy, meal, food, yummy, tasty
 
-### 9. "嘟嘟嘟"不满声/咕哝（Mutter / Grumble）
+### ⚠️ 警告与不适 (03_warning)
 
-**常见情绪：**
-- 不耐烦
-- 轻度烦躁
-- 抗议
+#### 9. 不耐烦/责怪 (03_warning_annoyed)
 
-**场景：**
-- 被抱太久
-- 剪指甲
-- 被打扰睡觉
+**具体叫声描述：**
+- 短促、重音，类似"啂"的不满叫声
+- 烦躁、抗议的音调
 
 **识别关键词：**
-- 中文：不耐烦、烦躁、抗议、被打扰、嘟嘟、咕哝
-- 英文：impatient, annoyed, protest, disturbed, mutter, grumble
+- 中文：不耐烦、责怪、不满、啂、短促、重音、烦躁、抱怨、抗议
+- 英文：annoyed, impatient, complaint, short, heavy, irritated, protest, grumble
+
+#### 10. 生气叫骂 (03_warning_angry_growl)
+
+**具体叫声描述：**
+- 连续、喉咙发出的警告声
+- 未到攻击程度，但表达愤怒
+
+**识别关键词：**
+- 中文：生气、叫骂、愤怒、警告、低吼、连续、喉咙、威胁、不满
+- 英文：angry, growl, warning, threat, continuous, throat, mad, furious
+
+#### 11. 生气想打人 (03_warning_aggressive_hiss)
+
+**具体叫声描述：**
+- 尖利、持续哈气的攻击前最后警告
+- 谨慎使用，表示强烈攻击性
+
+**识别关键词：**
+- 中文：想打人、攻击、尖利、持续、哈气、防御、危险、警告、攻击性
+- 英文：aggressive, hiss, attack, sharp, continuous, defense, danger, hostile
+
+#### 12. 求偶叫声 (03_warning_mating_call)
+
+**具体叫声描述：**
+- 发情期粗粝、不好听的长鸣
+- 归类为"不适"更合适
+
+**识别关键词：**
+- 中文：求偶、发情、粗粝、长鸣、不好听、交配、繁殖、发情期
+- 英文：mating, call, heat, rough, long, breeding, reproduction, estrus
+
+### 😿 压力与痛苦 (04_stress)
+
+#### 13. 关心/好奇询问 (04_stress_concerned_inquiry)
+
+**具体叫声描述：**
+- 拐弯拉长、带询问语调的叫声
+- 表达谨慎关心
+
+**识别关键词：**
+- 中文：关心、好奇询问、拐弯、拉长、询问、谨慎、担心、关切、询问
+- 英文：concerned, inquiry, question, careful, worried, care, ask, inquire
+
+#### 14. 打喷嚏 (04_stress_sneeze)
+
+**具体叫声描述：**
+- 对刺激物（如胡椒）的生理反应声音
+- 作为特殊反应归此类
+
+**识别关键词：**
+- 中文：打喷嚏、喷嚏、刺激、过敏、反应、阿嚏
+- 英文：sneeze, sneezing, irritation, allergy, reaction, achoo
+
+#### 15. 委屈叫声 (04_stress_whining)
+
+**具体叫声描述：**
+- 短促带试探的委屈、讨好声
+- 可怜、哀求的音调
+
+**识别关键词：**
+- 中文：委屈、讨好、短促、试探、可怜、哀求、诉苦、抱怨
+- 英文：whining, pleading, short, tentative, pitiful, begging, complaining
+
+#### 16. 害怕尖叫 (04_stress_scared_scream)
+
+**具体叫声描述：**
+- 受惊吓时的极高音调短促尖叫
+- 恐惧、惊恐的音调
+
+**识别关键词：**
+- 中文：害怕、尖叫、惊吓、受惊、恐惧、极高音调、短促、惊恐
+- 英文：scared, scream, frightened, fear, high pitch, short, terrified, panic
 
 ## 识别优先级
 
 系统按以下优先级识别猫叫声类型：
 
 1. **标签格式**（最高优先级）
-   - `[sound:meow]` 或 `<sound>purr</sound>`
-   - `猫叫:chattering` 或 `叫声:growl`
+   - `[sound:01_positive_greeting]` 或 `<sound>02_demand_missing</sound>`
+   - `猫叫:03_warning_annoyed` 或 `叫声:04_stress_scared_scream`
+   - 也支持简写格式：`[sound:greeting]` 会自动匹配 `01_positive_greeting`
 
 2. **关键词匹配**（按严重程度）
-   - 最严重：scream → yowl → growl → hiss
-   - 中等：chattering → mutter
-   - 友好：trill → purr
-   - 通用：meow（默认）
+   - 最严重：压力与痛苦 (04_stress) → 警告与不适 (03_warning)
+   - 中等：需求与沟通 (02_demand)
+   - 积极：积极与亲昵 (01_positive)（默认）
 
 3. **默认类型**
-   - 如果无法识别，使用默认类型：`meow`
+   - 如果无法识别，使用默认类型：`01_positive_greeting`
 
 ## 文件选择机制
 
@@ -203,7 +229,7 @@ config/cat_sounds/
 
 在Web界面配置时：
 - **猫叫声文件夹路径**：`config/cat_sounds`
-- **默认猫叫声类型**：`meow`（当无法识别时使用）
+- **默认猫叫声类型**：`01_positive_greeting`（当无法识别时使用）
 
 ## 大语言模型提示词建议
 
@@ -212,18 +238,32 @@ config/cat_sounds/
 ```
 你是一只可爱的小猫。请根据你的情绪和状态，在回复中使用以下格式之一：
 
-1. 使用标签格式：[sound:meow] 或 <sound>purr</sound>
+1. 使用标签格式：[sound:01_positive_greeting] 或 <sound>02_demand_missing</sound>
 2. 或在回复中包含对应的关键词
 
-可用的猫叫声类型：
-- meow: 求关注、撒娇、期待、轻微抱怨
-- purr: 放松、满足、安全感
-- trill: 友好、欢迎
-- chattering: 兴奋、专注、略挫败
-- hiss: 恐惧、防御、警告
-- growl: 威胁、愤怒、防御升级
-- yowl: 发情、压力、焦虑、疼痛
-- scream: 突然疼痛、强烈惊吓
-- mutter: 不耐烦、轻度烦躁
-```
+可用的猫叫声类型（按情感分类）：
 
+😊 积极与亲昵 (01_positive):
+- 01_positive_greeting: 打招呼、问候、你好
+- 01_positive_affectionate: 撒娇、亲昵、温柔
+- 01_positive_loving: 喜欢、爱你、满足
+- 01_positive_inviting_play: 邀请、一起玩、游戏
+- 01_positive_awake_stretch: 睡醒、慵懒、伸懒腰
+
+🗣️ 需求与沟通 (02_demand):
+- 02_demand_missing: 思念、想念、想你
+- 02_demand_curious: 疑问、好奇、询问
+- 02_demand_eating_happily: 吃饭、满足、享受
+
+⚠️ 警告与不适 (03_warning):
+- 03_warning_annoyed: 不耐烦、责怪、不满
+- 03_warning_angry_growl: 生气、叫骂、愤怒
+- 03_warning_aggressive_hiss: 想打人、攻击、危险
+- 03_warning_mating_call: 求偶、发情
+
+😿 压力与痛苦 (04_stress):
+- 04_stress_concerned_inquiry: 关心、好奇询问
+- 04_stress_sneeze: 打喷嚏
+- 04_stress_whining: 委屈、讨好
+- 04_stress_scared_scream: 害怕、尖叫、惊吓
+```
