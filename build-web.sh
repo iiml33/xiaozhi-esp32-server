@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Docker镜像构建脚本（仅本地构建，不推送）
-# 使用方法: ./build-and-push.sh
+# Docker镜像构建脚本（仅本地构建 web，不推送）
+# 使用方法: ./build-web.sh
 
 # 确保输出不被缓冲，所有错误信息可见
 export PYTHONUNBUFFERED=1
@@ -9,7 +9,7 @@ export PYTHONUNBUFFERED=1
 exec 2>&1
 
 # 配置镜像仓库（请根据实际情况修改）
-# 阿里云ACR配置
+# 阿里云ACR配置（如果只是本地测试，其实不强依赖这些变量）
 REGISTRY="crpi-mql7znw3gpm4caw8.cn-beijing.personal.cr.aliyuncs.com"  # 你的ACR公网地址
 NAMESPACE="aichatbotesp32"  # 替换为你的命名空间名称（在ACR控制台查看，例如：xiaozhi）
 USERNAME="nick0416011493"  # 替换为你的用户名（用于登录）
@@ -30,7 +30,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}  小智服务端 Docker镜像构建脚本${NC}"
+echo -e "${GREEN}  小智服务端 Web Docker镜像构建脚本${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 
@@ -41,7 +41,7 @@ if ! docker info > /dev/null 2>&1; then
 fi
 
 # 检查是否在项目根目录
-if [ ! -f "Dockerfile-server-base" ] || [ ! -f "Dockerfile-server" ] || [ ! -f "Dockerfile-web" ]; then
+if [ ! -f "Dockerfile-web" ]; then
     echo -e "${RED}错误: 请在项目根目录执行此脚本${NC}"
     exit 1
 fi
@@ -62,42 +62,12 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 1
 fi
 
-echo -e "${YELLOW}说明: 本脚本现在只负责构建本地镜像，不会执行登录和推送操作。${NC}"
+echo -e "${YELLOW}说明: 本脚本现在只负责本地构建 web 镜像，不会执行登录和推送操作。${NC}"
 
-# 构建基础镜像
+# 构建Web镜像（前端 + Java 后端）
 echo ""
 echo -e "${GREEN}========================================${NC}"
-echo -e "${YELLOW}步骤1/5: 构建基础镜像...${NC}"
-echo -e "${GREEN}========================================${NC}"
-echo "开始构建基础镜像..."
-if ! docker build -f Dockerfile-server-base -t ${IMAGE_PREFIX}:server-base . 2>&1; then
-    echo ""
-    echo -e "${RED}========================================${NC}"
-    echo -e "${RED}基础镜像构建失败！${NC}"
-    echo -e "${RED}========================================${NC}"
-    exit 1
-fi
-echo -e "${GREEN}✓ 基础镜像构建成功${NC}"
-
-# 构建服务端镜像
-echo ""
-echo -e "${GREEN}========================================${NC}"
-echo -e "${YELLOW}步骤2/5: 构建服务端镜像...${NC}"
-echo -e "${GREEN}========================================${NC}"
-echo "开始构建服务端镜像..."
-if ! docker build -f Dockerfile-server -t ${IMAGE_PREFIX}:server_latest . 2>&1; then
-    echo ""
-    echo -e "${RED}========================================${NC}"
-    echo -e "${RED}服务端镜像构建失败！${NC}"
-    echo -e "${RED}========================================${NC}"
-    exit 1
-fi
-echo -e "${GREEN}✓ 服务端镜像构建成功${NC}"
-
-# 构建Web镜像
-echo ""
-echo -e "${GREEN}========================================${NC}"
-echo -e "${YELLOW}步骤3/5: 构建Web镜像...${NC}"
+echo -e "${YELLOW}步骤1/1: 构建Web镜像...${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo "开始构建Web镜像..."
 if ! docker build -f Dockerfile-web -t ${IMAGE_PREFIX}:web_latest . 2>&1; then
@@ -111,14 +81,9 @@ echo -e "${GREEN}✓ Web镜像构建成功${NC}"
 
 echo ""
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}所有镜像已在本地构建完成（未推送）！${NC}"
+echo -e "${GREEN}web 镜像已在本地构建完成（未推送）！${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
-echo -e "${YELLOW}如需手动推送，可执行:${NC}"
-echo "  docker push ${IMAGE_PREFIX}:server-base"
-echo "  docker push ${IMAGE_PREFIX}:server_latest"
-echo "  docker push ${IMAGE_PREFIX}:web_latest"
 
-echo ""
 echo -e "${GREEN}构建流程结束！${NC}"
 

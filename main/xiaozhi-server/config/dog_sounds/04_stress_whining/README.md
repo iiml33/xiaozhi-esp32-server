@@ -1,15 +1,15 @@
 # 委屈叫声 (04_stress_whining)
 
 ## 说明
-存放短促带试探的委屈、讨好声。包含呜咽声。
+存放短促带试探的委屈、讨好声。
 
 ## 识别关键词
 
 ### 中文
-委屈、讨好、短促、试探、可怜、哀求、诉苦、抱怨、呜咽
+委屈、讨好、短促、试探、可怜、哀求、诉苦、抱怨
 
 ### 英文
-whining, pleading, short, tentative, pitiful, begging, complaining, whimper
+whining, pleading, short, tentative, pitiful, begging, complaining
 
 ## 音频文件要求
 - 格式：.wav, .mp3, .ogg, .m4a
