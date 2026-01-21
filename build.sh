@@ -1,19 +1,12 @@
 #!/bin/bash
 
 # Docker镜像构建脚本（仅本地构建，不推送）
-# 使用方法: ./build.sh
-# 在 Windows 上使用 Git Bash 或 WSL 运行: bash build.sh
+# 使用方法: ./build-and-push.sh
 
 # 确保输出不被缓冲，所有错误信息可见
 export PYTHONUNBUFFERED=1
 # 确保错误输出也显示在终端
 exec 2>&1
-
-# 调试信息：显示脚本开始执行
-echo "[DEBUG] 脚本开始执行..."
-echo "[DEBUG] 当前目录: $(pwd)"
-echo "[DEBUG] 当前用户: $(whoami)"
-echo ""
 
 # 配置镜像仓库（请根据实际情况修改）
 # 阿里云ACR配置
@@ -42,10 +35,6 @@ echo -e "${GREEN}========================================${NC}"
 echo ""
 
 # 检查Docker是否运行
-if ! command -v docker > /dev/null 2>&1; then
-    echo -e "${RED}错误: 未找到 Docker 命令，请先安装 Docker${NC}"
-    exit 1
-fi
 if ! docker info > /dev/null 2>&1; then
     echo -e "${RED}错误: Docker未运行，请先启动Docker${NC}"
     exit 1
@@ -54,8 +43,6 @@ fi
 # 检查是否在项目根目录
 if [ ! -f "Dockerfile-server-base" ] || [ ! -f "Dockerfile-server" ] || [ ! -f "Dockerfile-web" ]; then
     echo -e "${RED}错误: 请在项目根目录执行此脚本${NC}"
-    echo -e "${RED}当前目录: $(pwd)${NC}"
-    echo -e "${RED}缺少文件: Dockerfile-server-base, Dockerfile-server 或 Dockerfile-web${NC}"
     exit 1
 fi
 
@@ -68,18 +55,11 @@ fi
 echo "  用户名: ${USERNAME}"
 echo "  镜像前缀: ${IMAGE_PREFIX}"
 echo ""
-
-# 检查是否在交互式环境中，或者是否设置了跳过确认的环境变量
-if [ -t 0 ] && [ -z "$SKIP_CONFIRM" ]; then
-    read -p "是否使用以上配置? (y/n): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "请编辑脚本修改 REGISTRY、NAMESPACE 和 USERNAME 变量"
-        exit 1
-    fi
-else
-    echo -e "${YELLOW}非交互式环境，自动使用以上配置${NC}"
-    echo ""
+read -p "是否使用以上配置? (y/n): " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "请编辑脚本修改 REGISTRY、NAMESPACE 和 USERNAME 变量"
+    exit 1
 fi
 
 echo -e "${YELLOW}说明: 本脚本现在只负责构建本地镜像，不会执行登录和推送操作。${NC}"
@@ -141,3 +121,4 @@ echo "  docker push ${IMAGE_PREFIX}:web_latest"
 
 echo ""
 echo -e "${GREEN}构建流程结束！${NC}"
+
