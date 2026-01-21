@@ -28,6 +28,8 @@ services:
       - ./models/SenseVoiceSmall/model.pt:/opt/xiaozhi-esp32-server/models/SenseVoiceSmall/model.pt
       # 猫叫声文件目录（重要：用于猫语功能）
       - ./main/xiaozhi-server/config/cat_sounds:/opt/xiaozhi-server/cat_sounds
+      # 猫翻译声音文件目录（重要：用于猫翻译功能）
+      - ./main/xiaozhi-server/config/cat_translator_sounds:/opt/xiaozhi-server/cat_translator_sounds
       # 犬叫声文件目录（重要：用于犬语功能）
       - ./main/xiaozhi-server/config/dog_sounds:/opt/xiaozhi-server/dog_sounds
       # 音乐文件目录（重要：用于音乐播放功能）
