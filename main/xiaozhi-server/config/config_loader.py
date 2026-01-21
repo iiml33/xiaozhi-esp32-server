@@ -30,8 +30,14 @@ def load_config():
     # 加载默认配置
     default_config = read_config(default_config_path)
     custom_config = read_config(custom_config_path)
+    
+    # 如果配置文件为空或解析失败，使用空字典
+    if custom_config is None:
+        custom_config = {}
 
-    if custom_config.get("manager-api", {}).get("url"):
+    # 安全获取manager-api配置，处理None值的情况
+    manager_api_config = custom_config.get("manager-api") or {}
+    if manager_api_config.get("url"):
         import asyncio
         try:
             loop = asyncio.get_running_loop()
@@ -142,10 +148,14 @@ def merge_configs(default_config, custom_config):
     Returns:
         合并后的配置
     """
+    # 如果custom_config为None，直接返回default_config
+    if custom_config is None:
+        return default_config
+    
     if not isinstance(default_config, Mapping) or not isinstance(
         custom_config, Mapping
     ):
-        return custom_config
+        return custom_config if custom_config is not None else default_config
 
     merged = dict(default_config)
 
