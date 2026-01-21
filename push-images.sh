@@ -47,43 +47,36 @@ fi
 echo -e "${GREEN}登录状态正常${NC}"
 echo ""
 
-# 推送基础镜像
-echo -e "${YELLOW}正在推送基础镜像...${NC}"
-# 显示完整的 docker push 输出（包括报错）
-if docker push ${IMAGE_PREFIX}:server-base; then
-    echo -e "${GREEN}✓ 基础镜像推送成功${NC}"
-else
-    echo -e "${RED}✗ 基础镜像推送失败${NC}"
-    exit 1
-fi
-echo ""
+# 定义一个函数：如果镜像存在则推送，不存在就跳过
+push_if_exists() {
+  local TAG="$1"
+  if docker image inspect "${IMAGE_PREFIX}:${TAG}" > /dev/null 2>&1; then
+    echo -e "${YELLOW}正在推送镜像: ${IMAGE_PREFIX}:${TAG} ...${NC}"
+    if docker push "${IMAGE_PREFIX}:${TAG}"; then
+      echo -e "${GREEN}✓ 镜像推送成功: ${IMAGE_PREFIX}:${TAG}${NC}"
+    else
+      echo -e "${RED}✗ 镜像推送失败: ${IMAGE_PREFIX}:${TAG}${NC}"
+      exit 1
+    fi
+    echo ""
+  else
+    echo -e "${YELLOW}跳过: 本地未找到镜像 ${IMAGE_PREFIX}:${TAG}，不推送${NC}"
+    echo ""
+  fi
+}
 
-# 推送服务端镜像
-echo -e "${YELLOW}正在推送服务端镜像...${NC}"
-if docker push ${IMAGE_PREFIX}:server_latest; then
-    echo -e "${GREEN}✓ 服务端镜像推送成功${NC}"
-else
-    echo -e "${RED}✗ 服务端镜像推送失败${NC}"
-    exit 1
-fi
-echo ""
-
-# 推送Web镜像
-echo -e "${YELLOW}正在推送Web镜像...${NC}"
-if docker push ${IMAGE_PREFIX}:web_latest; then
-    echo -e "${GREEN}✓ Web镜像推送成功${NC}"
-else
-    echo -e "${RED}✗ Web镜像推送失败${NC}"
-    exit 1
-fi
-echo ""
+# 按顺序尝试推送三种镜像（不存在的会自动跳过）
+push_if_exists "server-base"
+push_if_exists "server_latest"
+push_if_exists "web_latest"
 
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}所有镜像推送完成！${NC}"
+echo -e "${GREEN}镜像推送流程完成！${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 echo "镜像地址："
-echo "  - ${IMAGE_PREFIX}:server-base"
-echo "  - ${IMAGE_PREFIX}:server_latest"
-echo "  - ${IMAGE_PREFIX}:web_latest"
+echo "  - ${IMAGE_PREFIX}:server-base   (如本地存在)"
+echo "  - ${IMAGE_PREFIX}:server_latest (如本地存在)"
+echo "  - ${IMAGE_PREFIX}:web_latest    (如本地存在)"
+echo ""
 
