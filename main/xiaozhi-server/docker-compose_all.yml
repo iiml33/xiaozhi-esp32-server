@@ -26,14 +26,7 @@ services:
       - ./data:/opt/xiaozhi-esp32-server/data
       # 模型文件挂接，很重要
       - ./models/SenseVoiceSmall/model.pt:/opt/xiaozhi-esp32-server/models/SenseVoiceSmall/model.pt
-      # 猫叫声文件目录（重要：用于猫语功能）
-      - ./config/cat_sounds:/opt/xiaozhi-esp32-server/config/cat_sounds
-      # 猫翻译声音文件目录（重要：用于猫翻译功能）
-      - ./config/cat_translator_sounds:/opt/xiaozhi-esp32-server/config/cat_translator_sounds
-      # 犬叫声文件目录（重要：用于犬语功能）
-      - ./config/dog_sounds:/opt/xiaozhi-esp32-server/config/dog_sounds
-      # 音乐文件目录（重要：用于音乐播放功能）
-      - ./music:/opt/xiaozhi-esp32-server/music
+
 
   # manager-api和manager-web模块
   xiaozhi-esp32-server-web:
