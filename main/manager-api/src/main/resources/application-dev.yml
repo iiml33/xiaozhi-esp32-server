@@ -15,7 +15,7 @@ spring:
       url: 
         jdbc:mysql://127.0.0.1:3306/xiaozhi_esp32_server?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true
       username: root
-      password: 'FrE:C.g:<R{d3A4L'
+      password: '*1k:}Vj5B1,d)R{B'
       initial-size: 10
       max-active: 100
       min-idle: 10

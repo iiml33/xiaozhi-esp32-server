@@ -4,11 +4,11 @@
 -- 添加猫翻译TTS供应器
 delete from `ai_model_provider` where id = 'SYSTEM_TTS_CatTranslator';
 INSERT INTO `ai_model_provider` (`id`, `model_type`, `provider_code`, `name`, `fields`, `sort`, `creator`, `create_date`, `updater`, `update_date`) VALUES
-('SYSTEM_TTS_CatTranslator', 'TTS', 'cat_translator', '猫翻译', '[{"key":"cat_sounds_dir","label":"猫叫声文件夹路径","type":"string"},{"key":"llm_config","label":"LLM配置（用于判断用户指令类型）","type":"dict","dict_name":"llm_config"},{"key":"default_sound_type","label":"默认猫叫声类型","type":"string"}]', 26, 1, NOW(), 1, NOW());
+('SYSTEM_TTS_CatTranslator', 'TTS', 'cat_translator', '猫翻译', '[{"key":"cat_sounds_dir","label":"猫叫声文件夹路径","type":"string"},{"key":"llm_config","label":"LLM配置（用于判断用户指令类型）","type":"dict","dict_name":"llm_config"},{"key":"default_sound_type","label":"默认猫叫声类型","type":"string"}]', 1, 1, NOW(), 1, NOW());
 
 -- 添加猫翻译TTS模型配置
 delete from `ai_model_config` where id = 'TTS_CatTranslator';
-INSERT INTO `ai_model_config` VALUES ('TTS_CatTranslator', 'TTS', 'CatTranslator', '猫翻译', 0, 1, '{\"type\": \"cat_translator\", \"cat_sounds_dir\": \"config/cat_translator_sounds\", \"llm_config\": {\"type\": \"openai\", \"api_key\": \"你的LLM API密钥\", \"model_name\": \"gpt-3.5-turbo\", \"base_url\": \"https://api.openai.com/v1\"}, \"default_sound_type\": \"01_positive_greeting\"}', NULL, NULL, 26, NULL, NULL, NULL, NULL);
+INSERT INTO `ai_model_config` VALUES ('TTS_CatTranslator', 'TTS', 'CatTranslator', '猫翻译', 0, 1, '{\"type\": \"cat_translator\", \"cat_sounds_dir\": \"config/cat_translator_sounds\", \"llm_config\": {\"type\": \"openai\", \"api_key\": \"你的LLM API密钥\", \"model_name\": \"gpt-3.5-turbo\", \"base_url\": \"https://api.openai.com/v1\"}, \"default_sound_type\": \"01_positive_greeting\"}', NULL, NULL, 1, NULL, NULL, NULL, NULL);
 
 -- 更新猫翻译TTS配置说明
 UPDATE `ai_model_config` SET 

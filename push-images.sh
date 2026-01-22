@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 快速推送镜像脚本
-# 使用方法: ./push-images.sh
+# 使用方法: bash ./push-images.sh
 
 REGISTRY="crpi-mql7znw3gpm4caw8.cn-beijing.personal.cr.aliyuncs.com"
 NAMESPACE="aichatbotesp32"

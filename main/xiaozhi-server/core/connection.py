@@ -862,6 +862,11 @@ class ConnectionHandler:
             self.logger.bind(tag=TAG).error(f"LLM 处理出错 {query}: {e}")
             return None
 
+        # 检查llm_responses是否为None
+        if llm_responses is None:
+            self.logger.bind(tag=TAG).error(f"LLM 返回None响应: {query}")
+            return None
+
         # 处理流式响应
         tool_call_flag = False
         # 支持多个并行工具调用 - 使用列表存储
@@ -1003,6 +1008,13 @@ class ConnectionHandler:
         need_llm_tools = []
 
         for result, tool_call_data in tool_results:
+            # 检查result是否为None
+            if result is None:
+                self.logger.bind(tag=TAG).error(
+                    f"工具调用返回None: function_name={tool_call_data.get('name', 'unknown')}"
+                )
+                continue
+            
             if result.action in [
                 Action.RESPONSE,
                 Action.NOTFOUND,
