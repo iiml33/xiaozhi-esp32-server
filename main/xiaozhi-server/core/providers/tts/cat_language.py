@@ -13,26 +13,18 @@ class TTSProvider(TTSProviderBase):
     def __init__(self, config, delete_audio_file):
         super().__init__(config, delete_audio_file)
         # 猫叫声文件夹路径（相对于项目根目录）
-        # 支持挂载方式：如果配置为绝对路径，则直接使用（适用于Docker挂载）；否则基于项目根目录
         cat_sounds_dir_rel = config.get("cat_sounds_dir", "config/cat_sounds")
         # 将相对路径转换为绝对路径（基于项目根目录）
         if os.path.isabs(cat_sounds_dir_rel):
-            # 绝对路径：直接使用（适用于Docker挂载方式）
             self.cat_sounds_dir = cat_sounds_dir_rel
-            # 挂载目录不应该自动创建，只检查是否存在
-            if not os.path.exists(self.cat_sounds_dir):
-                logger.bind(tag=TAG).warning(
-                    f"猫叫声挂载目录不存在: {self.cat_sounds_dir}，请检查Docker挂载配置或确保目录存在"
-                )
         else:
-            # 相对路径：基于项目根目录
             self.cat_sounds_dir = os.path.join(get_project_dir(), cat_sounds_dir_rel)
-            # 相对路径目录不存在时自动创建
-            if not os.path.exists(self.cat_sounds_dir):
-                os.makedirs(self.cat_sounds_dir)
-                logger.bind(tag=TAG).warning(
-                    f"猫叫声文件夹不存在，已创建: {self.cat_sounds_dir}，请添加猫叫声文件"
-                )
+        # 确保文件夹存在
+        if not os.path.exists(self.cat_sounds_dir):
+            os.makedirs(self.cat_sounds_dir)
+            logger.bind(tag=TAG).warning(
+                f"猫叫声文件夹不存在，已创建: {self.cat_sounds_dir}，请添加猫叫声文件"
+            )
         
         # 根据提示词模板：4大类16种具体类型
         # 😊 积极与亲昵 (01_positive)
