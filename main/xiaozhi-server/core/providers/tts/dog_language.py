@@ -1,6 +1,8 @@
 import os
 import re
 import random
+import tempfile
+from pydub import AudioSegment
 from config.logger import setup_logging
 from config.config_loader import get_project_dir
 from core.providers.tts.base import TTSProviderBase
@@ -65,37 +67,19 @@ class TTSProvider(TTSProviderBase):
         # 支持的音频格式
         self.supported_formats = [".wav", ".mp3", ".ogg", ".m4a"]
 
-    def extract_sound_type_from_text(self, text):
+    def extract_sound_types_from_text(self, text):
         """
-        从文本中提取犬叫声类型
-        根据提示词模板，只通过标准标签格式识别：[sound:类型]
-        LLM应该在回复中包含标签，且只包含标签，不包含其他内容
-        回答总长度不超过35个字符
+        从文本中提取犬叫声类型（支持多个标签）
+        根据提示词模板，通过标准标签格式识别：[sound:类型]
+        现在支持多个标签，可以组合多个音频文件，让犬的情感更丰富
         
-        返回: 16种分类之一或默认类型
+        返回: 标签类型列表，如果未找到则返回包含默认类型的列表
         """
         if not isinstance(text, str) or not text:
             logger.bind(tag=TAG).debug(
                 f"无法识别犬叫声类型，使用默认类型: {self.default_sound_type}"
             )
-            return self.default_sound_type
-        
-        # 验证文本长度（根据提示词模板：回答总长度不超过35个字符）
-        if len(text) > 35:
-            logger.bind(tag=TAG).warning(
-                f"文本长度超过35个字符（实际长度: {len(text)}），可能不符合提示词要求"
-            )
-        
-        # 根据提示词模板，只支持标准格式：[sound:01_positive_greeting]
-        # 格式：方括号内 sound: 后跟类型名称（下划线分隔）
-        # 注意：提示词要求每个回复必须包含且只包含一个声音类型标签，不包含其他内容
-        # 支持多种格式以容错：标准格式、缺少开头括号、缺少下划线等
-        sound_patterns = [
-            r'\[sound[:\s]+([\w_]+)\]',  # 标准格式：[sound:01_positive_greeting]
-            r'sound[:\s]+([\w_]+)\]',    # 缺少开头括号：sound:01_positive_greeting]
-            r'\[sound[:\s]+([\w_]+)',    # 缺少结尾括号：[sound:01_positive_greeting
-            r'sound[:\s]+([\w_]+)',      # 缺少两个括号：sound:01_positive_greeting
-        ]
+            return [self.default_sound_type]
         
         valid_types = [
             "01_positive_greeting", "01_positive_affectionate", "01_positive_loving",
@@ -107,52 +91,72 @@ class TTSProvider(TTSProviderBase):
             "04_stress_scared_scream"
         ]
         
-        # 尝试多种格式查找标签
-        matches = []
+        # 根据提示词模板，支持标准格式：[sound:01_positive_greeting]
+        # 格式：方括号内 sound: 后跟类型名称（下划线分隔）
+        # 支持多种格式以容错：标准格式、缺少开头括号、缺少下划线等
+        sound_patterns = [
+            r'\[sound[:\s]+([\w_]+)\]',  # 标准格式：[sound:01_positive_greeting]
+            r'sound[:\s]+([\w_]+)\]',    # 缺少开头括号：sound:01_positive_greeting]
+            r'\[sound[:\s]+([\w_]+)',    # 缺少结尾括号：[sound:01_positive_greeting
+            r'sound[:\s]+([\w_]+)',      # 缺少两个括号：sound:01_positive_greeting
+        ]
+        
+        # 使用所有格式查找所有标签，确保不遗漏任何标签
+        all_matches = []
         for pattern in sound_patterns:
             matches = re.findall(pattern, text, re.IGNORECASE)
             if matches:
-                break
+                all_matches.extend(matches)
         
-        if matches:
-            # 检查是否有多个标签（提示词要求只包含一个标签）
-            if len(matches) > 1:
-                logger.bind(tag=TAG).warning(
-                    f"发现多个声音类型标签（共{len(matches)}个），提示词要求只包含一个标签"
-                )
+        # 去重并保持顺序
+        unique_matches = []
+        seen = set()
+        for match in all_matches:
+            match_lower = match.strip().lower()
+            if match_lower not in seen:
+                seen.add(match_lower)
+                unique_matches.append(match.strip())
+        
+        if unique_matches:
+            logger.bind(tag=TAG).info(
+                f"从文本中识别到 {len(unique_matches)} 个声音类型标签: {unique_matches}"
+            )
             
-            sound_type_raw = matches[0].strip()
-            
-            # 尝试修复常见的格式问题：缺少下划线的情况
-            # 例如：01positivegreeting -> 01_positive_greeting
-            sound_type_fixed = sound_type_raw
-            if not '_' in sound_type_raw and len(sound_type_raw) > 2:
-                # 尝试匹配：01positivegreeting -> 01_positive_greeting
-                # 查找以数字开头的模式
-                number_match = re.match(r'^(\d{2})([a-z]+)([a-z_]+)?$', sound_type_raw, re.IGNORECASE)
-                if number_match:
-                    prefix = number_match.group(1)
-                    # 尝试在常见位置插入下划线
+            # 验证并修复所有标签
+            valid_sound_types = []
+            for sound_type_raw in unique_matches:
+                # 尝试修复常见的格式问题：缺少下划线的情况
+                sound_type_fixed = sound_type_raw
+                if not '_' in sound_type_raw and len(sound_type_raw) > 2:
+                    number_match = re.match(r'^(\d{2})([a-z]+)([a-z_]+)?$', sound_type_raw, re.IGNORECASE)
+                    if number_match:
+                        prefix = number_match.group(1)
+                        for valid_type in valid_types:
+                            if valid_type.startswith(prefix) and valid_type.replace('_', '').lower() == sound_type_raw.lower():
+                                sound_type_fixed = valid_type
+                                logger.bind(tag=TAG).info(
+                                    f"自动修复标签格式: {sound_type_raw} -> {sound_type_fixed}"
+                                )
+                                break
+                
+                # 验证是否为有效的16种类型之一
+                if sound_type_fixed.lower() in [t.lower() for t in valid_types]:
                     for valid_type in valid_types:
-                        if valid_type.startswith(prefix) and valid_type.replace('_', '').lower() == sound_type_raw.lower():
-                            sound_type_fixed = valid_type
-                            logger.bind(tag=TAG).info(
-                                f"自动修复标签格式: {sound_type_raw} -> {sound_type_fixed}"
-                            )
+                        if sound_type_fixed.lower() == valid_type.lower():
+                            valid_sound_types.append(valid_type)
                             break
+                else:
+                    logger.bind(tag=TAG).warning(
+                        f"识别到无效的声音类型标签: {sound_type_raw}（修复后: {sound_type_fixed}），跳过"
+                    )
             
-            # 验证是否为有效的16种类型之一
-            sound_type_to_check = sound_type_fixed
-            if sound_type_to_check.lower() in [t.lower() for t in valid_types]:
-                # 返回标准格式（保持大小写一致）
-                for valid_type in valid_types:
-                    if sound_type_to_check.lower() == valid_type.lower():
-                        logger.bind(tag=TAG).debug(f"从文本中识别到犬叫声类型标签: {valid_type}")
-                        return valid_type
-            else:
-                logger.bind(tag=TAG).warning(
-                    f"识别到无效的声音类型标签: {sound_type_raw}（修复后: {sound_type_fixed}），使用默认类型"
+            if valid_sound_types:
+                logger.bind(tag=TAG).debug(
+                    f"提取到 {len(valid_sound_types)} 个有效标签: {valid_sound_types}"
                 )
+                return valid_sound_types
+            else:
+                logger.bind(tag=TAG).warning("所有标签都无效，使用默认类型")
         else:
             # 如果没有找到标签，检查文本是否为空或只包含空白字符
             text_stripped = text.strip()
@@ -165,7 +169,7 @@ class TTSProvider(TTSProviderBase):
         
         # 如果没有找到有效标签，使用默认类型
         logger.bind(tag=TAG).debug(f"使用默认类型: {self.default_sound_type}")
-        return self.default_sound_type
+        return [self.default_sound_type]
 
     def get_dog_sound_file(self, sound_type):
         """
@@ -236,46 +240,130 @@ class TTSProvider(TTSProviderBase):
         )
         return selected_file
 
+    def merge_audio_files(self, audio_files):
+        """
+        合并多个音频文件
+        
+        参数:
+            audio_files: 音频文件路径列表
+        
+        返回:
+            合并后的音频数据（字节）
+        """
+        if not audio_files:
+            raise ValueError("音频文件列表为空")
+        
+        if len(audio_files) == 1:
+            # 如果只有一个文件，直接返回
+            with open(audio_files[0], "rb") as f:
+                return f.read()
+        
+        try:
+            # 加载第一个音频文件
+            combined = AudioSegment.from_file(audio_files[0])
+            
+            # 依次合并其他音频文件
+            for audio_file in audio_files[1:]:
+                audio_segment = AudioSegment.from_file(audio_file)
+                # 在音频之间添加短暂静音（100毫秒），让过渡更自然
+                combined = combined + AudioSegment.silent(duration=100) + audio_segment
+            
+            # 将合并后的音频导出为临时文件
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp_file:
+                combined.export(tmp_file.name, format="wav")
+                tmp_path = tmp_file.name
+            
+            # 读取合并后的音频数据
+            with open(tmp_path, "rb") as f:
+                audio_data = f.read()
+            
+            # 删除临时文件
+            try:
+                os.unlink(tmp_path)
+            except Exception as e:
+                logger.bind(tag=TAG).warning(f"删除临时文件失败: {e}")
+            
+            logger.bind(tag=TAG).info(
+                f"成功合并 {len(audio_files)} 个音频文件，总大小: {len(audio_data)} 字节"
+            )
+            return audio_data
+            
+        except Exception as e:
+            logger.bind(tag=TAG).error(f"合并音频文件时出错: {e}")
+            # 如果合并失败，尝试返回第一个文件
+            logger.bind(tag=TAG).warning("合并失败，返回第一个音频文件")
+            with open(audio_files[0], "rb") as f:
+                return f.read()
+
     async def text_to_speak(self, text, output_file):
         """
         将文本转换为犬叫声
         根据提示词模板，从文本中提取声音类型标签 [sound:类型]，
-        然后返回对应的犬叫声文件
+        支持多个标签，可以组合多个音频文件，让犬的情感更丰富
         
         提示词要求：
-        - 每个回复必须包含且只包含一个声音类型标签，不包含其他内容
-        - 标签必须使用正确的格式，系统才能识别
+        - 可以在回复中包含一个或多个声音类型标签
+        - 标签必须使用正确的格式：[sound:类型]
+        - 多个标签会被依次播放，让情感表达更丰富
         - 如果无法确定情绪，使用默认类型：01_positive_greeting
-        - 回答总长度不超过35个字符
         """
-        # 从文本中提取犬叫声类型
-        sound_type = self.extract_sound_type_from_text(text)
+        # 从文本中提取所有犬叫声类型标签
+        sound_types = self.extract_sound_types_from_text(text)
         
-        # 获取对应的犬叫声文件
-        dog_sound_file = self.get_dog_sound_file(sound_type)
+        # 获取每个类型对应的犬叫声文件
+        dog_sound_files = []
+        for sound_type in sound_types:
+            dog_sound_file = self.get_dog_sound_file(sound_type)
+            if dog_sound_file:
+                dog_sound_files.append(dog_sound_file)
+            else:
+                logger.bind(tag=TAG).error(
+                    f"无法找到犬叫声类型 {sound_type} 对应的文件"
+                )
+                # 如果某个类型找不到文件，尝试使用默认类型
+                if sound_type != self.default_sound_type:
+                    default_file = self.get_dog_sound_file(self.default_sound_type)
+                    if default_file:
+                        dog_sound_files.append(default_file)
+                        logger.bind(tag=TAG).warning(
+                            f"类型 {sound_type} 的文件不存在，使用默认类型 {self.default_sound_type}"
+                        )
         
-        if not dog_sound_file:
-            logger.bind(tag=TAG).error(
-                f"无法找到犬叫声类型 {sound_type} 对应的文件"
-            )
+        if not dog_sound_files:
             raise FileNotFoundError(
-                f"无法找到犬叫声类型 {sound_type} 对应的文件，"
-                f"请确保在 {os.path.join(self.dog_sounds_dir, sound_type)} 文件夹中添加音频文件"
+                f"无法找到任何犬叫声文件，"
+                f"请确保在 {self.dog_sounds_dir} 文件夹中添加音频文件"
             )
         
-        # 如果指定了输出文件，复制犬叫声文件到输出位置
-        if output_file:
-            import shutil
-            shutil.copy2(dog_sound_file, output_file)
-            logger.bind(tag=TAG).info(
-                f"已将犬叫声文件复制到: {output_file}"
-            )
-            return None
+        # 如果只有一个文件，直接处理
+        if len(dog_sound_files) == 1:
+            if output_file:
+                import shutil
+                shutil.copy2(dog_sound_files[0], output_file)
+                logger.bind(tag=TAG).info(
+                    f"已将犬叫声文件复制到: {output_file}"
+                )
+                return None
+            else:
+                with open(dog_sound_files[0], "rb") as f:
+                    audio_data = f.read()
+                logger.bind(tag=TAG).info(
+                    f"返回犬叫声音频数据，大小: {len(audio_data)} 字节"
+                )
+                return audio_data
         else:
-            # 返回音频文件的字节数据
-            with open(dog_sound_file, "rb") as f:
-                audio_data = f.read()
-            logger.bind(tag=TAG).info(
-                f"返回犬叫声音频数据，大小: {len(audio_data)} 字节"
-            )
-            return audio_data
+            # 合并多个音频文件
+            merged_audio_data = self.merge_audio_files(dog_sound_files)
+            
+            if output_file:
+                with open(output_file, "wb") as f:
+                    f.write(merged_audio_data)
+                logger.bind(tag=TAG).info(
+                    f"已将合并后的犬叫声文件保存到: {output_file}"
+                )
+                return None
+            else:
+                logger.bind(tag=TAG).info(
+                    f"返回合并后的犬叫声音频数据，大小: {len(merged_audio_data)} 字节"
+                )
+                return merged_audio_data
