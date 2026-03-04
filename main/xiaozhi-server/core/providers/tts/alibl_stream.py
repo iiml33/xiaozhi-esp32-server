@@ -6,9 +6,10 @@ import queue
 import asyncio
 import traceback
 import websockets
+
 from asyncio import Task
+from typing import Callable, Any
 from config.logger import setup_logging
-from core.utils import opus_encoder_utils
 from core.utils.tts import MarkdownCleaner
 from core.providers.tts.base import TTSProviderBase
 from core.providers.tts.dto.dto import SentenceType, ContentType, InterfaceType
@@ -18,6 +19,12 @@ logger = setup_logging()
 
 
 class TTSProvider(TTSProviderBase):
+    TTS_PARAM_CONFIG = [
+        ("ttsVolume", "volume", 0, 100, 50, int),
+        ("ttsRate", "rate", 0.5, 2.0, 1.0, lambda v: round(v, 1)),
+        ("ttsPitch", "pitch", 0.5, 2.0, 1.0, lambda v: round(v, 1)),
+    ]
+
     def __init__(self, config, delete_audio_file):
         super().__init__(config, delete_audio_file)
 
@@ -41,8 +48,6 @@ class TTSProvider(TTSProviderBase):
 
         # 音频参数配置
         self.format = config.get("format", "pcm")
-        sample_rate = config.get("sample_rate", "24000")
-        self.sample_rate = int(sample_rate) if sample_rate else 24000
 
         volume = config.get("volume", "50")
         self.volume = int(volume) if volume else 50
@@ -53,17 +58,15 @@ class TTSProvider(TTSProviderBase):
         pitch = config.get("pitch", "1.0")
         self.pitch = float(pitch) if pitch else 1.0
 
+        # 应用百分比调整（如果存在），否则使用公有化配置
+        self._apply_percentage_params(config)
+
         self.header = {
             "Authorization": f"Bearer {self.api_key}",
             # "user-agent": "your_platform_info", // 可选
             # "X-DashScope-WorkSpace": workspace, // 可选，阿里云百炼业务空间ID
             "X-DashScope-DataInspection": "enable",
         }
-
-        # 创建Opus编码器
-        self.opus_encoder = opus_encoder_utils.OpusEncoderUtils(
-            sample_rate=self.sample_rate, channels=1, frame_size_ms=60
-        )
 
     async def _ensure_connection(self):
         """确保WebSocket连接可用，支持60秒内连接复用"""
@@ -245,7 +248,7 @@ class TTSProvider(TTSProviderBase):
                         "text_type": "PlainText",
                         "voice": self.voice,
                         "format": self.format,
-                        "sample_rate": self.sample_rate,
+                        "sample_rate": self.conn.sample_rate,
                         "volume": self.volume,
                         "rate": self.rate,
                         "pitch": self.pitch,
@@ -390,6 +393,24 @@ class TTSProvider(TTSProviderBase):
         finally:
             self._monitor_task = None
 
+    def audio_to_opus_data_stream(
+        self, audio_file_path, callback: Callable[[Any], Any] = None
+    ):
+        """重写父类方法：使用独立的临时编码器处理音频文件，避免与TTS流式编码器并发冲突。
+        双流式TTS中，monitor任务在event loop线程接收TTS音频并使用self.opus_encoder编码，
+        同时tts_text_priority_thread处理音乐文件也使用self.opus_encoder，
+        共享的encoder.buffer非线程安全，并发访问会导致SILK resampler断言失败。
+        """
+        from core.utils.util import audio_to_data_stream
+
+        return audio_to_data_stream(
+            audio_file_path,
+            is_opus=True,
+            callback=callback,
+            sample_rate=self.conn.sample_rate,
+            opus_encoder=None,
+        )
+
     def to_tts(self, text: str) -> list:
         """非流式生成音频数据，用于生成音频及测试场景"""
         try:
@@ -429,7 +450,7 @@ class TTSProvider(TTSProviderBase):
                                 "text_type": "PlainText",
                                 "voice": self.voice,
                                 "format": self.format,
-                                "sample_rate": self.sample_rate,
+                                "sample_rate": self.conn.sample_rate,
                                 "volume": self.volume,
                                 "rate": self.rate,
                                 "pitch": self.pitch,
