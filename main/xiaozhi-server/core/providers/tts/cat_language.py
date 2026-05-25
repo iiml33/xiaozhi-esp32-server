@@ -28,24 +28,40 @@ class TTSProvider(TTSProviderBase):
                 f"猫叫声文件夹不存在，已创建: {self.cat_sounds_dir}，请添加猫叫声文件"
             )
         
-        # 根据提示词模板：4大类16种具体类型
-        # 😊 积极与亲昵 (01_positive)
-        # 🗣️ 需求与沟通 (02_demand)
-        # ⚠️ 警告与不适 (03_warning)
-        # 😿 压力与痛苦 (04_stress)
+        # 根据提示词模板：4大类19种具体类型（使用中文拼音命名）
+        # 😊 友好满足 (01_youhao_*)
+        # 📣 吸引注意 (02_xiyin_*)
+        # ⚠️ 威胁警告 (03_weixie_*)
+        # 📢 呼唤猫的叫声 (04_huhuan_*)
         # 注意：实际识别仅通过标准标签格式 [sound:类型]，不再使用关键词映射
         
         # 默认猫叫声类型（如果无法识别）
-        # 固定使用 01_positive_greeting 作为默认类型，确保始终有效
-        config_default_type = config.get("default_sound_type", "01_positive_greeting")
+        # 固定使用 02_xiyin_fuyan 作为默认类型，确保始终有效（敷衍）
+        config_default_type = config.get("default_sound_type", "02_xiyin_fuyan")
         valid_default_types = [
-            "01_positive_greeting", "01_positive_affectionate", "01_positive_loving",
-            "01_positive_inviting_play", "01_positive_awake_stretch",
-            "02_demand_missing", "02_demand_curious", "02_demand_eating_happily",
-            "03_warning_annoyed", "03_warning_angry_growl", "03_warning_aggressive_hiss",
-            "03_warning_mating_call",
-            "04_stress_concerned_inquiry", "04_stress_sneeze", "04_stress_whining",
-            "04_stress_scared_scream"
+            # 友好满足 (01_youhao_*)
+            "01_youhao_sajiao",              # 撒娇
+            "01_youhao_manzu",               # 满足
+            "01_youhao_zhenhaochi",          # 真好吃
+            "01_youhao_shufu",               # 舒服
+            "01_youhao_huhuan_wanyou",       # 友好呼唤/邀请玩耍
+            "01_youhao_dahulu",              # 打呼噜
+            # 吸引注意 (02_xiyin_*)
+            "02_xiyin_dazhaohu",              # 打招呼
+            "02_xiyin_xiangni",               # 想你
+            "02_xiyin_ele",                   # 饿了
+            "02_xiyin_xingfen",               # 兴奋
+            "02_xiyin_weiqu",                 # 委屈
+            "02_xiyin_qiujiumama",            # 求救/找妈妈
+            "02_xiyin_jiaolv_haipa",          # 焦虑/害怕
+            "02_xiyin_qiuou",                 # 求偶
+            "02_xiyin_fuyan",                 # 敷衍
+            # 威胁警告 (03_weixie_*)
+            "03_weixie_qingdu_buman",         # 轻度不满
+            "03_weixie_zhongdu_buman",        # 中度不满
+            "03_weixie_yanzhong_buman",       # 重度不满
+            # 呼唤猫的叫声 (04_huhuan_*)
+            "04_huhuan_maojiao",              # 呼唤猫的叫声
         ]
         
         # 验证配置的默认类型是否有效
@@ -57,12 +73,12 @@ class TTSProvider(TTSProviderBase):
                     logger.bind(tag=TAG).info(f"使用配置的默认类型: {valid_type}")
                     break
         else:
-            # 如果配置的默认类型无效或为空，强制使用01_positive_greeting
-            if config_default_type and config_default_type.lower() != "01_positive_greeting":
+            # 如果配置的默认类型无效或为空，强制使用02_xiyin_fuyan
+            if config_default_type and config_default_type.lower() != "02_xiyin_fuyan":
                 logger.bind(tag=TAG).warning(
-                    f"配置的默认类型 '{config_default_type}' 无效，强制使用 '01_positive_greeting'"
+                    f"配置的默认类型 '{config_default_type}' 无效，强制使用 '02_xiyin_fuyan'"
                 )
-            self.default_sound_type = "01_positive_greeting"
+            self.default_sound_type = "02_xiyin_fuyan"
         
         # 支持的音频格式
         self.supported_formats = [".wav", ".mp3", ".ogg", ".m4a"]
@@ -82,16 +98,32 @@ class TTSProvider(TTSProviderBase):
             return [self.default_sound_type]
         
         valid_types = [
-            "01_positive_greeting", "01_positive_affectionate", "01_positive_loving",
-            "01_positive_inviting_play", "01_positive_awake_stretch",
-            "02_demand_missing", "02_demand_curious", "02_demand_eating_happily",
-            "03_warning_annoyed", "03_warning_angry_growl", "03_warning_aggressive_hiss",
-            "03_warning_mating_call",
-            "04_stress_concerned_inquiry", "04_stress_sneeze", "04_stress_whining",
-            "04_stress_scared_scream"
+            # 友好满足 (01_youhao_*)
+            "01_youhao_sajiao",              # 撒娇
+            "01_youhao_manzu",               # 满足
+            "01_youhao_zhenhaochi",          # 真好吃
+            "01_youhao_shufu",               # 舒服
+            "01_youhao_huhuan_wanyou",       # 友好呼唤/邀请玩耍
+            "01_youhao_dahulu",              # 打呼噜
+            # 吸引注意 (02_xiyin_*)
+            "02_xiyin_dazhaohu",             # 打招呼
+            "02_xiyin_xiangni",              # 想你
+            "02_xiyin_ele",                  # 饿了
+            "02_xiyin_xingfen",              # 兴奋
+            "02_xiyin_weiqu",                # 委屈
+            "02_xiyin_qiujiumama",           # 求救/找妈妈
+            "02_xiyin_jiaolv_haipa",         # 焦虑/害怕
+            "02_xiyin_qiuou",                # 求偶
+            "02_xiyin_fuyan",                # 敷衍
+            # 威胁警告 (03_weixie_*)
+            "03_weixie_qingdu_buman",        # 轻度不满
+            "03_weixie_zhongdu_buman",       # 中度不满
+            "03_weixie_yanzhong_buman",      # 重度不满
+            # 呼唤猫的叫声 (04_huhuan_*)
+            "04_huhuan_maojiao",              # 呼唤猫的叫声
         ]
         
-        # 根据提示词模板，支持标准格式：[sound:01_positive_greeting]
+        # 根据提示词模板，支持标准格式：[sound:01_youhao_sajiao]
         # 格式：方括号内 sound: 后跟类型名称（下划线分隔）
         # 支持多种格式以容错：标准格式、缺少开头括号、缺少下划线等
         sound_patterns = [
@@ -139,7 +171,7 @@ class TTSProvider(TTSProviderBase):
                                 )
                                 break
                 
-                # 验证是否为有效的16种类型之一
+                # 验证是否为有效的预设类型之一
                 if sound_type_fixed.lower() in [t.lower() for t in valid_types]:
                     for valid_type in valid_types:
                         if sound_type_fixed.lower() == valid_type.lower():
@@ -305,7 +337,7 @@ class TTSProvider(TTSProviderBase):
         - 可以在回复中包含一个或多个声音类型标签
         - 标签必须使用正确的格式：[sound:类型]
         - 多个标签会被依次播放，让情感表达更丰富
-        - 如果无法确定情绪，使用默认类型：01_positive_greeting
+        - 如果无法确定情绪，使用默认类型：01_youhao_sajiao
         """
         # 从文本中提取所有猫叫声类型标签
         sound_types = self.extract_sound_types_from_text(text)

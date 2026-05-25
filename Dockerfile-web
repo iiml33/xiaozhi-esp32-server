@@ -1,8 +1,15 @@
 # 第一阶段：构建Vue前端
 FROM node:18 AS web-builder
 WORKDIR /app
-COPY main/manager-web/package*.json ./
-RUN npm install
+COPY main/manager-web/package.json ./
+# 增加 npm 网络重试与超时，应对 registry 连接不稳定（ECONNRESET）
+# 使用官方 registry（package-lock 的 resolved 指向 npmmirror 易断连，故暂不复制 lock 文件）
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-timeout 300000 && \
+    npm install
 COPY main/manager-web .
 RUN npm run build
 

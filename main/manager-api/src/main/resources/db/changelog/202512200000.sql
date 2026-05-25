@@ -5,37 +5,39 @@ INSERT INTO `ai_model_provider` (`id`, `model_type`, `provider_code`, `name`, `f
 
 -- 添加猫语TTS模型配置
 delete from `ai_model_config` where id = 'TTS_CatLanguage';
-INSERT INTO `ai_model_config` VALUES ('TTS_CatLanguage', 'TTS', 'CatLanguage', '猫语', 0, 1, '{\"type\": \"cat_language\", \"cat_sounds_dir\": \"config/cat_sounds\", \"default_sound_type\": \"01_positive_greeting\"}', NULL, NULL, 0, NULL, NULL, NULL, NULL);
+INSERT INTO `ai_model_config` VALUES ('TTS_CatLanguage', 'TTS', 'CatLanguage', '猫语', 0, 1, '{\"type\": \"cat_language\", \"cat_sounds_dir\": \"config/cat_sounds\", \"default_sound_type\": \"02_xiyin_fuyan\"}', NULL, NULL, 0, NULL, NULL, NULL, NULL);
 
 -- 更新猫语TTS配置说明
 UPDATE `ai_model_config` SET 
 `doc_link` = '',
 `remark` = '猫语TTS说明：
 1. 此TTS提供者会根据大语言模型返回的文本中的情绪和上下文返回对应的猫叫声
-2. 需要在服务器上创建猫叫声文件夹，结构如下（16种类型，按4大类分类）：
+2. 需要在服务器上创建猫叫声文件夹，结构如下（19种类型，按4大类分类，使用拼音命名）：
    config/cat_sounds/
-   ├── 01_positive_greeting/          (😊 积极与亲昵 - 打招呼)
-   ├── 01_positive_affectionate/        (😊 积极与亲昵 - 对主人撒娇)
-   ├── 01_positive_loving/              (😊 积极与亲昵 - 表达喜欢爱你)
-   ├── 01_positive_inviting_play/       (😊 积极与亲昵 - 邀请一起玩)
-   ├── 01_positive_awake_stretch/       (😊 积极与亲昵 - 睡醒慵懒叫)
-   ├── 02_demand_missing/               (🗣️ 需求与沟通 - 思念主人)
-   ├── 02_demand_curious/               (🗣️ 需求与沟通 - 发出疑问)
-   ├── 02_demand_eating_happily/        (🗣️ 需求与沟通 - 吃饭满足叫)
-   ├── 03_warning_annoyed/              (⚠️ 警告与不适 - 不耐烦/责怪)
-   ├── 03_warning_angry_growl/          (⚠️ 警告与不适 - 生气叫骂)
-   ├── 03_warning_aggressive_hiss/      (⚠️ 警告与不适 - 生气想打人)
-   ├── 03_warning_mating_call/           (⚠️ 警告与不适 - 求偶叫声)
-   ├── 04_stress_concerned_inquiry/     (😿 压力与痛苦 - 关心/好奇询问)
-   ├── 04_stress_sneeze/                (😿 压力与痛苦 - 打喷嚏)
-   ├── 04_stress_whining/               (😿 压力与痛苦 - 委屈叫声)
-   └── 04_stress_scared_scream/         (😿 压力与痛苦 - 害怕尖叫)
+   ├── 01_youhao_sajiao/              (😊 友好满足 - 撒娇)
+   ├── 01_youhao_manzu/               (😊 友好满足 - 满足)
+   ├── 01_youhao_zhenhaochi/          (😊 友好满足 - 真好吃)
+   ├── 01_youhao_shufu/               (😊 友好满足 - 舒服)
+   ├── 01_youhao_huhuan_wanyou/       (😊 友好满足 - 友好呼唤/邀请玩耍)
+   ├── 01_youhao_dahulu/              (😊 友好满足 - 打呼噜)
+   ├── 02_xiyin_dazhaohu/             (📣 吸引注意 - 打招呼)
+   ├── 02_xiyin_xiangni/              (📣 吸引注意 - 想你)
+   ├── 02_xiyin_ele/                  (📣 吸引注意 - 饿了)
+   ├── 02_xiyin_xingfen/              (📣 吸引注意 - 兴奋)
+   ├── 02_xiyin_weiqu/                (📣 吸引注意 - 委屈)
+   ├── 02_xiyin_qiujiumama/           (📣 吸引注意 - 求救/找妈妈)
+   ├── 02_xiyin_jiaolv_haipa/         (📣 吸引注意 - 焦虑/害怕)
+   ├── 02_xiyin_qiuou/                (📣 吸引注意 - 求偶)
+   ├── 02_xiyin_fuyan/                (📣 吸引注意 - 敷衍)
+   ├── 03_weixie_qingdu_buman/        (⚠️ 威胁警告 - 轻度不满)
+   ├── 03_weixie_zhongdu_buman/       (⚠️ 威胁警告 - 中度不满)
+   ├── 03_weixie_yanzhong_buman/      (⚠️ 威胁警告 - 重度不满)
+   └── 04_huhuan_maojiao/             (📢 呼唤猫的叫声 - 呼唤猫的叫声)
 3. 支持的音频格式：.wav, .mp3, .ogg, .m4a
 4. 系统会从对应类型文件夹中随机选择一个音频文件播放
 5. 猫叫声类型识别方式：
-   - 仅通过标准标签格式识别：[sound:01_positive_greeting] 或 <sound>02_demand_missing</sound>
-   - 支持简写格式：[sound:greeting] 会自动匹配 01_positive_greeting
-   - 如果无法识别，将使用默认类型（默认：01_positive_greeting）
+   - 仅通过标准标签格式识别：[sound:02_xiyin_fuyan] 等
+   - 如果无法识别，将使用默认类型（默认：02_xiyin_fuyan，敷衍）
    - 注意：系统不再使用关键词匹配，LLM必须在回复中包含标签格式
 ' WHERE `id` = 'TTS_CatLanguage';
 
