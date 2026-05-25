@@ -2,10 +2,8 @@
 import type { AgentDetail, ModelOption, PluginDefinition, RoleTemplate } from '@/api/agent/types'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { getAgentDetail, getAgentTags, getAllLanguage, getModelOptions, getPluginFunctions, getRoleTemplates, updateAgent, updateAgentTags } from '@/api/agent/agent'
-import ContextProviderDialog from '@/components/ContextProviderDialog.vue'
-import VoiceSettingsDialog from '@/components/VoiceSettingsDialog.vue'
 import { t } from '@/i18n'
-import { usePluginStore } from '@/store'
+import { usePluginStore, useProvider, useSpeedPitch } from '@/store'
 import { toast } from '@/utils/toast'
 
 defineOptions({
@@ -31,6 +29,7 @@ const formData = ref<Partial<AgentDetail>>({
   vadModelId: '',
   asrModelId: '',
   llmModelId: '',
+  slmModelId: '',
   vllmModelId: '',
   intentModelId: '',
   memModelId: '',
@@ -48,6 +47,7 @@ const displayNames = ref({
   vad: t('agent.pleaseSelect'),
   asr: t('agent.pleaseSelect'),
   llm: t('agent.pleaseSelect'),
+  slm: t('agent.pleaseSelect'),
   vllm: t('agent.pleaseSelect'),
   intent: t('agent.pleaseSelect'),
   memory: t('agent.pleaseSelect'),
@@ -96,6 +96,7 @@ const pickerShow = ref<{
   vad: false,
   asr: false,
   llm: false,
+  slm: false,
   vllm: false,
   intent: false,
   memory: false,
@@ -105,29 +106,22 @@ const pickerShow = ref<{
   report: false,
 })
 
-const ttsSettings = ref({
-  volume: 0,
-  speed: 0,
-  pitch: 0,
-})
-
 const allFunctions = ref<PluginDefinition[]>([])
 const dynamicTags = ref([])
 const inputValue = ref('')
 const inputVisible = ref(false)
-const showContextProviderDialog = ref(false)
-const currentContextProviders = ref([])
-const showVoiceSettingsDialog = ref(false)
-const voiceSettings = ref({
-  volume: 0,
-  speed: 0,
-  pitch: 0,
-})
 const languageOptions = ref([])
 const isVisibleReport = ref(false)
+const tempSummaryMemory = ref('')
+
+// 音频播放相关
+const audioRef = ref<UniApp.InnerAudioContext | null>(null)
+const playingVoiceId = ref<string>('')
 
 // 使用插件store
 const pluginStore = usePluginStore()
+const speedPitchStore = useSpeedPitch()
+const providerStore = useProvider()
 
 // tabs
 const tabList = [
@@ -172,29 +166,20 @@ function handleInputConfirm() {
   inputVisible.value = false
 }
 
+// 是否禁用历史记忆输入框
+const isMemoryDisabled = computed(() => formData.value.memModelId !== 'Memory_mem_local_short')
+
 // 打开上下文源编辑弹窗
 function openContextProviderDialog() {
-  showContextProviderDialog.value = true
-}
-
-// 处理上下文源更新
-function handleUpdateContext(providers: any[]) {
-  currentContextProviders.value = providers
-}
-
-function openVoiceSettingsDialog() {
-  showVoiceSettingsDialog.value = true
-}
-
-function handleUpdateVoiceSettings(settings: any) {
-  ttsSettings.value = settings
-  formData.value.ttsVolume = settings.volume
-  formData.value.ttsRate = settings.speed
-  formData.value.ttsPitch = settings.pitch
+  uni.navigateTo({
+    url: '/pages/agent/provider',
+  })
 }
 
 function handleRegulate() {
-  openVoiceSettingsDialog()
+  uni.navigateTo({
+    url: '/pages/agent/speedPitch',
+  })
 }
 
 // 加载智能体详情
@@ -204,6 +189,7 @@ async function loadAgentDetail() {
 
   try {
     loading.value = true
+    tempSummaryMemory.value = ''
     const detail = await getAgentDetail(agentId.value)
     formData.value = { ...detail }
 
@@ -211,14 +197,15 @@ async function loadAgentDetail() {
     pluginStore.setCurrentAgentId(agentId.value)
     pluginStore.setCurrentFunctions(detail.functions || [])
 
+    // 更新语速音调
+    speedPitchStore.updateSpeedPitch({
+      ttsVolume: detail.ttsVolume || 0,
+      ttsRate: detail.ttsRate || 0,
+      ttsPitch: detail.ttsPitch || 0,
+    })
+
     // 加载上下文配置
-    currentContextProviders.value = (detail as any).contextProviders || []
-    // 加载语音设置
-    voiceSettings.value = {
-      volume: (detail as any).volume || 0,
-      speed: (detail as any).speed || 0,
-      pitch: (detail as any).pitch || 0,
-    }
+    providerStore.updateProviders(detail.contextProviders || [])
 
     // 如果有TTS模型，加载对应的音色选项
     if (detail.ttsModelId) {
@@ -288,6 +275,7 @@ function updateDisplayNames() {
   displayNames.value.vad = getModelDisplayName('VAD', formData.value.vadModelId)
   displayNames.value.asr = getModelDisplayName('ASR', formData.value.asrModelId)
   displayNames.value.llm = getModelDisplayName('LLM', formData.value.llmModelId)
+  displayNames.value.slm = getModelDisplayName('LLM', formData.value.slmModelId)
   displayNames.value.vllm = getModelDisplayName('VLLM', formData.value.vllmModelId)
   displayNames.value.intent = getModelDisplayName('Intent', formData.value.intentModelId)
   displayNames.value.memory = getModelDisplayName('Memory', formData.value.memModelId)
@@ -295,7 +283,6 @@ function updateDisplayNames() {
 
   // 角色音色特殊处理
   displayNames.value.report = reportOptions.find(item => item.value === formData.value.chatHistoryConf)?.name
-  displayNames.value.language = formData.value.ttsLanguage
 
   isVisibleReport.value = formData.value.memModelId !== 'Memory_nomem'
 
@@ -373,17 +360,17 @@ function filterVoicesByLanguage() {
   }
 
   // 同步到ttsSettings（如果值为null，使用0作为显示默认值，但不修改form中的值）
-  ttsSettings.value = {
-    volume: formData.value.ttsVolume !== null && formData.value.ttsVolume !== undefined ? formData.value.ttsVolume : 0,
-    speed: formData.value.ttsRate !== null && formData.value.ttsRate !== undefined ? formData.value.ttsRate : 0,
-    pitch: formData.value.ttsPitch !== null && formData.value.ttsPitch !== undefined ? formData.value.ttsPitch : 0,
-  }
+  speedPitchStore.updateSpeedPitch({
+    ttsVolume: formData.value.ttsVolume !== null && formData.value.ttsVolume !== undefined ? formData.value.ttsVolume : 0,
+    ttsRate: formData.value.ttsRate !== null && formData.value.ttsRate !== undefined ? formData.value.ttsRate : 0,
+    ttsPitch: formData.value.ttsPitch !== null && formData.value.ttsPitch !== undefined ? formData.value.ttsPitch : 0,
+  })
 }
 
 // 根据语音合成模型加载语言
 async function fetchAllLanguag(ttsModelId: string) {
   try {
-    const res = await getAllLanguage(ttsModelId, '') as any[]
+    const res = await getAllLanguage(ttsModelId)
     // 保存完整的音色信息
     voiceDetails.value = res.reduce((acc, voice) => {
       acc[voice.id] = voice
@@ -447,15 +434,25 @@ function selectRoleTemplate(templateId: string) {
   selectedTemplateId.value = templateId
   const template = roleTemplates.value.find(t => t.id === templateId)
   if (template) {
-    formData.value.systemPrompt = template.systemPrompt
-    formData.value.vadModelId = template.vadModelId
-    formData.value.asrModelId = template.asrModelId
-    formData.value.llmModelId = template.llmModelId
-    formData.value.vllmModelId = template.vllmModelId
-    formData.value.intentModelId = template.intentModelId
-    formData.value.memModelId = template.memModelId
-    formData.value.ttsModelId = template.ttsModelId
-    formData.value.ttsVoiceId = template.ttsVoiceId
+    formData.value = {
+      ...formData.value,
+      systemPrompt: template.systemPrompt || formData.value.systemPrompt,
+      vadModelId: template.vadModelId || formData.value.vadModelId,
+      asrModelId: template.asrModelId || formData.value.asrModelId,
+      llmModelId: template.llmModelId || formData.value.llmModelId,
+      slmModelId: template.llmModelId || formData.value.slmModelId,
+      vllmModelId: template.vllmModelId || formData.value.vllmModelId,
+      intentModelId: template.intentModelId || formData.value.intentModelId,
+      memModelId: template.memModelId || formData.value.memModelId,
+      ttsModelId: template.ttsModelId || formData.value.ttsModelId,
+      ttsVoiceId: template.ttsVoiceId || formData.value.ttsVoiceId,
+      agentName: template.agentName || formData.value.agentName,
+      chatHistoryConf: template.chatHistoryConf || formData.value.chatHistoryConf,
+      summaryMemory: template.summaryMemory || formData.value.summaryMemory,
+      langCode: template.langCode || formData.value.langCode,
+    }
+    fetchAllLanguag(template.ttsModelId || formData.value.ttsModelId)
+    updateDisplayNames()
   }
 }
 
@@ -481,6 +478,9 @@ async function onPickerConfirm(type: string, value: any, name: string) {
     case 'llm':
       formData.value.llmModelId = value
       break
+    case 'slm':
+      formData.value.slmModelId = value
+      break
     case 'vllm':
       formData.value.vllmModelId = value
       break
@@ -494,6 +494,14 @@ async function onPickerConfirm(type: string, value: any, name: string) {
       displayNames.value.memory = name // 确保显示名称正确更新
       displayNames.value.report = reportOptions[1].name
       isVisibleReport.value = value !== 'Memory_nomem'
+      if (value === 'Memory_nomem' || value === 'Memory_mem_report_only') {
+        tempSummaryMemory.value = formData.value.summaryMemory
+        formData.value.summaryMemory = ''
+      }
+      else if (tempSummaryMemory.value !== '' && formData.value.summaryMemory === '') {
+        formData.value.summaryMemory = tempSummaryMemory.value
+        tempSummaryMemory.value = ''
+      }
       break
     case 'tts':
       formData.value.ttsModelId = value
@@ -518,6 +526,57 @@ async function onPickerConfirm(type: string, value: any, name: string) {
 // 选择器取消
 function onPickerCancel(type: string) {
   pickerShow.value[type] = false
+  // 关闭时停止播放
+  if (type === 'voiceprint') {
+    stopAudio()
+  }
+}
+
+// 播放音频
+function playAudio(voiceDemo: string, voiceId: string, event: Event) {
+  event.stopPropagation() // 阻止事件冒泡，防止关闭下拉框
+
+  if (!voiceDemo) {
+    return
+  }
+
+  // 如果正在播放同一个音频，则停止
+  if (playingVoiceId.value === voiceId) {
+    stopAudio()
+    return
+  }
+
+  // 停止之前的音频
+  stopAudio()
+
+  // 创建新的音频实例
+  audioRef.value = uni.createInnerAudioContext()
+  audioRef.value.src = voiceDemo
+  playingVoiceId.value = voiceId
+
+  // 监听播放结束
+  audioRef.value.onEnded(() => {
+    playingVoiceId.value = ''
+  })
+
+  // 监听播放错误
+  audioRef.value.onError(() => {
+    toast.error('音频播放失败')
+    playingVoiceId.value = ''
+  })
+
+  // 播放音频
+  audioRef.value.play()
+}
+
+// 停止音频
+function stopAudio() {
+  if (audioRef.value) {
+    audioRef.value.stop()
+    audioRef.value.destroy()
+    audioRef.value = null
+  }
+  playingVoiceId.value = ''
 }
 
 // 获取模型显示名称
@@ -564,8 +623,9 @@ async function saveAgent() {
     // 构建保存数据，包含上下文配置和语音设置
     const saveData = {
       ...formData.value,
+      ...speedPitchStore.speedPitch,
       ttsLanguage: formData.value.language,
-      contextProviders: currentContextProviders.value,
+      contextProviders: providerStore.providers,
     }
     await updateAgent(agentId.value, saveData)
     loadAgentDetail()
@@ -611,15 +671,6 @@ function handleTools() {
   })
 }
 
-// 监听插件配置更新
-function watchPluginUpdates() {
-  // 监听store中的插件配置变化
-  watch(() => pluginStore.currentFunctions, (newFunctions) => {
-    console.log('插件配置已更新:', newFunctions)
-    formData.value.functions = newFunctions
-  }, { deep: true })
-}
-
 // 获取智能体标签
 async function loadAgentTags() {
   try {
@@ -635,9 +686,12 @@ async function handleUpdateAgentTags() {
   await updateAgentTags(agentId.value, { tagNames })
 }
 
+// 监听store中的插件配置变化
+watch(() => pluginStore.currentFunctions, (newFunctions) => {
+  formData.value.functions = newFunctions
+}, { deep: true })
+
 onMounted(async () => {
-  // 初始化插件配置监听
-  watchPluginUpdates()
   loadAgentTags()
 
   // 先加载模型选项和角色模板
@@ -726,7 +780,7 @@ onMounted(async () => {
         </text>
         <view class="mt-0 flex flex-wrap items-center gap-[12rpx]">
           <text class="text-[26rpx] text-[#65686f]">
-            {{ t('agent.contextProviderSuccess', { count: currentContextProviders.length }) }}
+            {{ t('agent.contextProviderSuccess', { count: providerStore.providers.length }) }}
           </text>
           <a class="text-[26rpx] text-[#5778ff] no-underline" href="https://github.com/xinnan-tech/xiaozhi-esp32-server/blob/main/docs/context-provider-integration.md" target="_blank">
             {{ t('agent.contextProviderDocLink') }}
@@ -789,6 +843,16 @@ onMounted(async () => {
           </text>
           <text class="mx-[16rpx] flex-1 text-right text-[26rpx] text-[#65686f]">
             {{ displayNames.llm }}
+          </text>
+          <wd-icon name="arrow-right" custom-class="text-[20rpx] text-[#9d9ea3]" />
+        </view>
+
+        <view class="flex cursor-pointer items-center justify-between border border-[#eeeeee] rounded-[12rpx] bg-[#f5f7fb] p-[20rpx] transition-all duration-300 active:bg-[#eef3ff]" @click="openPicker('slm')">
+          <text class="text-[28rpx] text-[#232338] font-medium">
+            {{ t('agent.slm') }}
+          </text>
+          <text class="mx-[16rpx] flex-1 text-right text-[26rpx] text-[#65686f]">
+            {{ displayNames.slm }}
           </text>
           <wd-icon name="arrow-right" custom-class="text-[20rpx] text-[#9d9ea3]" />
         </view>
@@ -908,8 +972,9 @@ onMounted(async () => {
         <textarea
           v-model="formData.summaryMemory"
           :placeholder="t('agent.memoryContent')"
-          disabled
-          class="box-border h-[500rpx] w-full resize-none break-words break-all border border-[#eeeeee] rounded-[12rpx] bg-[#f0f0f0] p-[20rpx] text-[26rpx] text-[#65686f] leading-[1.6] opacity-80 outline-none"
+          :disabled="isMemoryDisabled"
+          :style="isMemoryDisabled ? 'background: #f0f0f0' : ''"
+          class="box-border h-[500rpx] w-full resize-none break-words break-all border border-[#eeeeee] rounded-[12rpx] p-[20rpx] text-[26rpx] leading-[1.6] opacity-80 outline-none"
         />
       </view>
     </view>
@@ -949,6 +1014,13 @@ onMounted(async () => {
     />
 
     <wd-action-sheet
+      v-model="pickerShow.slm"
+      :actions="modelOptions.LLM && modelOptions.LLM.map(item => ({ name: item.modelName, value: item.id }))"
+      @close="onPickerCancel('slm')"
+      @select="({ item }) => onPickerConfirm('slm', item.value, item.name)"
+    />
+
+    <wd-action-sheet
       v-model="pickerShow.vllm"
       :actions="modelOptions.VLLM && modelOptions.VLLM.map(item => ({ name: item.modelName, value: item.id }))"
       @close="onPickerCancel('vllm')"
@@ -972,16 +1044,35 @@ onMounted(async () => {
     <wd-action-sheet
       v-model="pickerShow.tts"
       :actions="modelOptions.TTS && modelOptions.TTS.map(item => ({ name: item.modelName, value: item.id }))"
+      class="custom-sheet-tts"
       @close="onPickerCancel('tts')"
       @select="({ item }) => onPickerConfirm('tts', item.value, item.name)"
     />
 
-    <wd-action-sheet
-      v-model="pickerShow.voiceprint"
-      :actions="voiceOptions"
-      @close="onPickerCancel('voiceprint')"
-      @select="({ item }) => onPickerConfirm('voiceprint', item.value, item.name)"
-    />
+    <!-- 自定义语音选择弹出层 -->
+    <wd-popup v-model="pickerShow.voiceprint" class="custom-popup" position="bottom" @close="onPickerCancel('voiceprint')">
+      <view class="overflow-hidden rounded-[20rpx] bg-white pb-[20rpx] pt-[20rpx]">
+        <view class="max-h-[600rpx] overflow-y-auto">
+          <view
+            v-for="voice in voiceOptions"
+            :key="voice.value"
+            class="flex items-center justify-between border-b border-[#f5f5f5] p-[32rpx] transition-all active:bg-[#f5f7fb]"
+            @click="onPickerConfirm('voiceprint', voice.value, voice.name)"
+          >
+            <text :class="`flex-1 text-[28rpx] text-[#232338] ${(voice.voiceDemo || voice.voice_demo) ? '' : 'text-center'}`">
+              {{ voice.name }}
+            </text>
+            <view v-if="voice.voiceDemo || voice.voice_demo" class="ml-[20rpx]" @click.stop="playAudio(voice.voiceDemo || voice.voice_demo, voice.value, $event)">
+              <wd-icon
+                :name="playingVoiceId === voice.value ? 'pause-circle' : 'play-circle'"
+                size="24px"
+                :custom-class="playingVoiceId === voice.value ? 'text-[#336cff]' : 'text-[#9d9ea3]'"
+              />
+            </view>
+          </view>
+        </view>
+      </view>
+    </wd-popup>
     <wd-action-sheet
       v-model="pickerShow.language"
       :actions="languageOptions"
@@ -994,21 +1085,26 @@ onMounted(async () => {
       @close="onPickerCancel('report')"
       @select="({ item }) => onPickerConfirm('report', item.value, item.name)"
     />
-    <ContextProviderDialog
-      v-model:visible="showContextProviderDialog"
-      :providers="currentContextProviders"
-      @confirm="handleUpdateContext"
-    />
-    <VoiceSettingsDialog
-      v-model:visible="showVoiceSettingsDialog"
-      :settings="ttsSettings"
-      @confirm="handleUpdateVoiceSettings"
-    />
   </view>
 </template>
 
 <style lang="scss" scoped>
 ::v-deep .wd-tag__close {
   color: #336cff !important;
+}
+::v-deep .custom-popup {
+  .wd-popup {
+    padding: 20rpx !important;
+    background: transparent !important;
+  }
+}
+::v-deep .custom-sheet-tts {
+  .wd-action-sheet {
+    padding: 8px 0 !important;
+    overflow: hidden;
+  }
+  .wd-action-sheet__actions {
+    padding: 0 !important;
+  }
 }
 </style>
